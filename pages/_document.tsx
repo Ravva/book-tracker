@@ -3,7 +3,9 @@ import { Html, Head, Main, NextScript } from 'next/document';
 export default function Document() {
   return (
     <Html lang="ru">
-      <Head />
+      <Head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      </Head>
       <body>
         {/* Скрипт для предотвращения мигания при загрузке темы */}
         <script
