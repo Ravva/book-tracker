@@ -15,7 +15,7 @@ interface Tag {
 export default function Tags() {
   const [searchQuery, setSearchQuery] = useState('');
   const [newTagName, setNewTagName] = useState('');
-  
+
   // В реальном приложении данные будут загружаться из Supabase
   const allTags: Tag[] = [
     { id: 1, name: 'Фантастика', bookCount: 325 },
@@ -34,19 +34,19 @@ export default function Tags() {
     { id: 14, name: 'Поэзия', bookCount: 32 },
     { id: 15, name: 'Ужасы', bookCount: 21 },
   ];
-  
+
   // Фильтрация тегов по поисковому запросу
   const filteredTags = allTags.filter(tag => {
     return searchQuery === '' || tag.name.toLowerCase().includes(searchQuery.toLowerCase());
   });
-  
+
   // Обработка добавления нового тега
   const handleAddTag = () => {
     if (!newTagName.trim()) return;
-    
+
     // В реальном приложении здесь будет отправка данных в Supabase
     console.log('Добавление нового тега:', newTagName);
-    
+
     // Сброс поля ввода
     setNewTagName('');
   };
@@ -62,7 +62,7 @@ export default function Tags() {
       <Layout>
         <div className="container mx-auto py-8 px-4">
           <h1 className="text-3xl font-bold mb-6">Теги</h1>
-          
+
           {/* Добавление нового тега */}
           <Card className="mb-8">
             <CardHeader>
@@ -82,7 +82,7 @@ export default function Tags() {
               </div>
             </CardContent>
           </Card>
-          
+
           {/* Поиск тегов */}
           <div className="mb-6">
             <Input
@@ -92,7 +92,7 @@ export default function Tags() {
               className="max-w-md"
             />
           </div>
-          
+
           {/* Облако тегов */}
           <Card className="mb-8">
             <CardHeader>
@@ -102,11 +102,11 @@ export default function Tags() {
             <CardContent>
               <div className="flex flex-wrap gap-2">
                 {filteredTags.map(tag => (
-                  <Link 
-                    key={tag.id} 
+                  <Link
+                    key={tag.id}
                     href={`/books?tag=${tag.name}`}
                     className={`
-                      px-3 py-1.5 rounded-full border border-border hover:bg-muted transition-colors
+                      px-3 py-1.5 rounded-full border border-input hover:bg-muted transition-colors
                       ${tag.bookCount > 200 ? 'text-lg font-medium' : ''}
                       ${tag.bookCount > 100 && tag.bookCount <= 200 ? 'text-base' : ''}
                       ${tag.bookCount <= 100 ? 'text-sm' : ''}
@@ -118,7 +118,7 @@ export default function Tags() {
               </div>
             </CardContent>
           </Card>
-          
+
           {/* Список тегов */}
           <Card>
             <CardHeader>
@@ -128,7 +128,7 @@ export default function Tags() {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {filteredTags.map(tag => (
-                  <div key={tag.id} className="flex justify-between items-center p-2 border-b border-border">
+                  <div key={tag.id} className="flex justify-between items-center p-2 border-b border-input">
                     <Link href={`/books?tag=${tag.name}`} className="hover:text-primary">
                       {tag.name}
                     </Link>
@@ -138,7 +138,7 @@ export default function Tags() {
               </div>
             </CardContent>
           </Card>
-          
+
           {filteredTags.length === 0 && (
             <div className="text-center py-12">
               <p className="text-muted-foreground">Теги не найдены</p>

@@ -33,7 +33,7 @@ interface Comment {
 export default function BookDetails() {
   const router = useRouter();
   const { id } = router.query;
-  
+
   // В реальном приложении данные будут загружаться из Supabase
   const [book, setBook] = useState<Book>({
     id: Number(id) || 1,
@@ -49,7 +49,7 @@ export default function BookDetails() {
     downloadCount: 567,
     likeCount: 890
   });
-  
+
   const [comments, setComments] = useState<Comment[]>([
     {
       id: 1,
@@ -66,10 +66,10 @@ export default function BookDetails() {
       createdAt: '2023-06-20T09:15:00Z'
     }
   ]);
-  
+
   const [newComment, setNewComment] = useState('');
   const [isLiked, setIsLiked] = useState(false);
-  
+
   // Функция для отображения статуса на русском
   const getStatusText = (status: string) => {
     switch (status) {
@@ -79,11 +79,11 @@ export default function BookDetails() {
       default: return status;
     }
   };
-  
+
   // Обработка добавления комментария
   const handleAddComment = () => {
     if (!newComment.trim()) return;
-    
+
     const comment: Comment = {
       id: comments.length + 1,
       userId: 3, // В реальном приложении будет ID текущего пользователя
@@ -91,11 +91,11 @@ export default function BookDetails() {
       content: newComment,
       createdAt: new Date().toISOString()
     };
-    
+
     setComments([...comments, comment]);
     setNewComment('');
   };
-  
+
   // Обработка лайка
   const handleLike = () => {
     setIsLiked(!isLiked);
@@ -104,7 +104,7 @@ export default function BookDetails() {
       likeCount: isLiked ? prev.likeCount - 1 : prev.likeCount + 1
     }));
   };
-  
+
   // Обработка скачивания
   const handleDownload = () => {
     // В реальном приложении здесь будет логика скачивания файла
@@ -114,7 +114,7 @@ export default function BookDetails() {
     }));
     alert('Скачивание файла...');
   };
-  
+
   // Форматирование даты
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -142,35 +142,35 @@ export default function BookDetails() {
               Назад
             </Button>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
             {/* Обложка и основная информация */}
             <div className="md:col-span-1">
               <div className="bg-muted rounded-lg overflow-hidden mb-4 aspect-[2/3] flex items-center justify-center">
                 {book.cover ? (
-                  <img 
-                    src={book.cover} 
-                    alt={`Обложка ${book.title}`} 
+                  <img
+                    src={book.cover}
+                    alt={`Обложка ${book.title}`}
                     className="w-full h-full object-cover"
                   />
                 ) : (
                   <div className="text-muted-foreground">Нет обложки</div>
                 )}
               </div>
-              
+
               <div className="space-y-4">
                 <div className="flex justify-between">
-                  <Button 
-                    variant={isLiked ? "default" : "outline"} 
+                  <Button
+                    variant={isLiked ? "default" : "outline"}
                     size="sm"
                     onClick={handleLike}
                   >
                     {isLiked ? 'Понравилось' : 'Нравится'} ({book.likeCount})
                   </Button>
-                  
+
                   {book.file && (
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
                       onClick={handleDownload}
                     >
@@ -178,15 +178,15 @@ export default function BookDetails() {
                     </Button>
                   )}
                 </div>
-                
+
                 <div className="text-sm text-muted-foreground">
                   Просмотров: {book.viewCount}
                 </div>
-                
+
                 <div className="flex flex-wrap gap-1 mt-2">
                   {book.tags.map(tag => (
-                    <span 
-                      key={tag} 
+                    <span
+                      key={tag}
                       className="px-2 py-1 bg-muted text-xs rounded-full"
                     >
                       {tag}
@@ -195,18 +195,18 @@ export default function BookDetails() {
                 </div>
               </div>
             </div>
-            
+
             {/* Детали книги */}
             <div className="md:col-span-2">
               <h1 className="text-3xl font-bold mb-2">{book.title}</h1>
               <h2 className="text-xl text-muted-foreground mb-4">{book.author}</h2>
-              
+
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div>
                   <div className="text-sm font-medium">Статус</div>
                   <div>{getStatusText(book.status)}</div>
                 </div>
-                
+
                 {book.rating && (
                   <div>
                     <div className="text-sm font-medium">Рейтинг</div>
@@ -214,12 +214,12 @@ export default function BookDetails() {
                   </div>
                 )}
               </div>
-              
+
               <div className="mb-8">
                 <h3 className="text-lg font-medium mb-2">Описание</h3>
                 <p className="text-muted-foreground">{book.description}</p>
               </div>
-              
+
               {/* Комментарии */}
               <Card>
                 <CardHeader>
@@ -228,7 +228,7 @@ export default function BookDetails() {
                 <CardContent>
                   <div className="space-y-4 mb-6">
                     {comments.map(comment => (
-                      <div key={comment.id} className="border-b border-border pb-4">
+                      <div key={comment.id} className="border-b border-input pb-4">
                         <div className="flex justify-between mb-1">
                           <div className="font-medium">{comment.userName}</div>
                           <div className="text-xs text-muted-foreground">
@@ -238,22 +238,22 @@ export default function BookDetails() {
                         <p>{comment.content}</p>
                       </div>
                     ))}
-                    
+
                     {comments.length === 0 && (
                       <div className="text-center py-4 text-muted-foreground">
                         Нет комментариев
                       </div>
                     )}
                   </div>
-                  
+
                   <div className="space-y-2">
-                    <textarea 
+                    <textarea
                       className="w-full min-h-[100px] p-2 border border-input rounded-md bg-background"
                       placeholder="Добавьте комментарий..."
                       value={newComment}
                       onChange={(e) => setNewComment(e.target.value)}
                     />
-                    <Button 
+                    <Button
                       onClick={handleAddComment}
                       disabled={!newComment.trim()}
                     >
@@ -264,7 +264,7 @@ export default function BookDetails() {
               </Card>
             </div>
           </div>
-          
+
           {/* Похожие книги */}
           <Card>
             <CardHeader>
@@ -274,7 +274,7 @@ export default function BookDetails() {
             <CardContent>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {[1, 2, 3, 4].map(i => (
-                  <div key={i} className="border border-border rounded-lg p-4">
+                  <div key={i} className="border border-input rounded-lg p-4">
                     <div className="font-medium mb-1">Книга {i}</div>
                     <div className="text-sm text-muted-foreground mb-2">Автор {i}</div>
                     <Button variant="outline" size="sm" asChild>

@@ -13,16 +13,16 @@ export default function Layout({ children }: LayoutProps) {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="border-b border-border">
+      <header className="border-b border-input">
         <div className="container mx-auto py-4 px-4 flex justify-between items-center">
           <Link href="/" className="text-2xl font-bold">
             Трекер книг
           </Link>
           <nav className="hidden md:flex space-x-4">
-            <Link href="/" className={`${router.pathname === '/' ? 'text-primary' : 'text-foreground'}`}>
+            <Link href="/" className={`${router.pathname === '/' ? 'text-primary' : 'text-foreground'} hover:text-primary transition-colors`}>
               Главная
             </Link>
-            <Link href="/books" className={`${router.pathname === '/books' ? 'text-primary' : 'text-foreground'}`}>
+            <Link href="/books" className={`${router.pathname === '/books' ? 'text-primary' : 'text-foreground'} hover:text-primary transition-colors`}>
               Книги
             </Link>
           </nav>
@@ -40,7 +40,7 @@ export default function Layout({ children }: LayoutProps) {
       <main className="flex-1">
         {children}
       </main>
-      <footer className="border-t border-border py-6">
+      <footer className="border-t border-input py-6">
         <div className="container mx-auto px-4 text-center text-muted-foreground">
           <p>© {new Date().getFullYear()} Трекер прочитанных книг</p>
         </div>

@@ -45,10 +45,10 @@ export default function Home() {
               <CardContent>
                 <ul className="space-y-4">
                   {popularBooks.map((book) => (
-                    <li key={book.id} className="border-b border-border pb-2">
+                    <li key={book.id} className="border-b border-input pb-2">
                       <div className="font-medium">{book.title}</div>
                       <div className="text-sm text-muted-foreground">{book.author}</div>
-                      <div className="text-sm">Рейтинг: {book.rating}/10</div>
+                      <div className="text-sm">Рейтинг: <span className="font-semibold text-primary">{book.rating}/10</span></div>
                     </li>
                   ))}
                 </ul>
@@ -69,7 +69,7 @@ export default function Home() {
               <CardContent>
                 <ul className="space-y-4">
                   {recentActivity.map((activity) => (
-                    <li key={activity.id} className="border-b border-border pb-2">
+                    <li key={activity.id} className="border-b border-input pb-2">
                       <div>
                         <span className="font-medium">{activity.user}</span>{' '}
                         <span className="text-muted-foreground">{activity.action}</span>{' '}
@@ -90,7 +90,7 @@ export default function Home() {
               <CardContent>
                 <ul className="space-y-4">
                   {recentComments.map((comment) => (
-                    <li key={comment.id} className="border-b border-border pb-2">
+                    <li key={comment.id} className="border-b border-input pb-2">
                       <div className="font-medium">{comment.user} о книге "{comment.book}"</div>
                       <div className="text-sm text-muted-foreground">{comment.comment}</div>
                     </li>

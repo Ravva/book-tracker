@@ -16,7 +16,7 @@ export default function BookCard({ id, title, author, cover, rating, status, tag
   // Функция для отображения статуса на русском
   const getStatusText = (status?: string) => {
     if (!status) return null;
-    
+
     switch (status) {
       case 'read': return 'Прочитано';
       case 'reading': return 'Читаю';
@@ -26,23 +26,23 @@ export default function BookCard({ id, title, author, cover, rating, status, tag
   };
 
   return (
-    <Card className="overflow-hidden flex flex-col h-full">
+    <Card className="overflow-hidden flex flex-col h-full hover:shadow-md transition-shadow">
       <div className="h-40 bg-muted flex items-center justify-center">
         {cover ? (
-          <img 
-            src={cover} 
-            alt={`Обложка ${title}`} 
+          <img
+            src={cover}
+            alt={`Обложка ${title}`}
             className="h-full w-full object-cover"
           />
         ) : (
           <div className="text-muted-foreground">Нет обложки</div>
         )}
       </div>
-      <CardHeader>
+      <CardHeader className="pb-2">
         <CardTitle className="line-clamp-1">{title}</CardTitle>
         <p className="text-sm text-muted-foreground">{author}</p>
       </CardHeader>
-      <CardContent className="flex-grow">
+      <CardContent className="flex-grow pt-0">
         {status && (
           <div className="flex items-center gap-2 mb-2">
             <span className="text-sm font-medium">Статус:</span>
@@ -52,15 +52,15 @@ export default function BookCard({ id, title, author, cover, rating, status, tag
         {rating !== undefined && (
           <div className="flex items-center gap-2 mb-2">
             <span className="text-sm font-medium">Рейтинг:</span>
-            <span className="text-sm">{rating}/10</span>
+            <span className="text-sm font-semibold text-primary">{rating}/10</span>
           </div>
         )}
         {tags && tags.length > 0 && (
           <div className="flex flex-wrap gap-1 mt-2">
             {tags.map(tag => (
-              <span 
-                key={tag} 
-                className="px-2 py-1 bg-muted text-xs rounded-full"
+              <span
+                key={tag}
+                className="px-2 py-1 bg-muted text-xs rounded-full hover:bg-primary/10 transition-colors"
               >
                 {tag}
               </span>
