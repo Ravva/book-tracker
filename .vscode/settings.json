@@ -1,0 +1,6 @@
+{
+  "css.validate.enable": false,
+  "less.validate.enable": false,
+  "scss.validate.enable": false,
+  "tailwindCSS.validate": true
+}

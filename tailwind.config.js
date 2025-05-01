@@ -29,6 +29,10 @@ module.exports = {
           DEFAULT: "var(--secondary)",
           foreground: "var(--secondary-foreground)",
         },
+        // Fallback colors for Tailwind validation
+        'bg-background': 'var(--background)',
+        'text-foreground': 'var(--foreground)',
+        'border-border': 'var(--border)',
         destructive: {
           DEFAULT: "var(--destructive)",
           foreground: "var(--foreground)",
