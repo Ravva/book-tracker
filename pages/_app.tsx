@@ -10,10 +10,9 @@ export default function App({ Component, pageProps }: AppProps) {
     setMounted(true);
   }, []);
 
-  // Предотвращаем гидратацию с неправильной темой
-  if (!mounted) {
-    return <div style={{ visibility: 'hidden' }}><Component {...pageProps} /></div>;
-  }
-
-  return <Component {...pageProps} />;
+  return (
+    <div className={mounted ? "min-h-screen flex flex-col" : "min-h-screen flex flex-col invisible"}>
+      <Component {...pageProps} />
+    </div>
+  );
 }

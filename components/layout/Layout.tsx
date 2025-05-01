@@ -11,8 +11,11 @@ interface LayoutProps {
 export default function Layout({ children }: LayoutProps) {
   const router = useRouter();
 
+  // Используем статический год для предотвращения ошибок гидратации
+  const currentYear = 2024;
+
   return (
-    <div className="min-h-screen flex flex-col">
+    <>
       <header className="border-b border-input">
         <div className="container mx-auto py-4 px-4 flex justify-between items-center">
           <Link href="/" className="text-2xl font-bold">
@@ -42,9 +45,9 @@ export default function Layout({ children }: LayoutProps) {
       </main>
       <footer className="border-t border-input py-6">
         <div className="container mx-auto px-4 text-center text-muted-foreground">
-          <p>© {new Date().getFullYear()} Трекер прочитанных книг</p>
+          <p>© {currentYear} Трекер прочитанных книг</p>
         </div>
       </footer>
-    </div>
+    </>
   );
 }
