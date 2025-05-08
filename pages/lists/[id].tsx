@@ -1,204 +1,255 @@
 import Head from 'next/head';
 import Layout from '@/components/layout/Layout';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { useRouter } from 'next/router';
-import { useState } from 'react';
-import BookCard from '@/components/books/BookCard';
+import { Typography, Button, Card, List, Space, Tag, Divider, Spin, Empty, Popconfirm, App } from 'antd';
+import { EditOutlined, DeleteOutlined, ShareAltOutlined, BookOutlined, UserOutlined } from '@ant-design/icons';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import { supabase } from '@/lib/supabase';
+import { formatDate } from '@/lib/utils';
 
-interface Book {
-  id: number;
-  title: string;
-  author: string;
-  cover?: string;
-  rating?: number;
-  status?: 'read' | 'reading' | 'want_to_read';
-  tags?: string[];
+const { Title, Text, Paragraph } = Typography;
+
+interface ListDetailsProps {
+  isDarkMode: boolean;
+  toggleTheme: () => void;
 }
 
-interface BookList {
-  id: number;
-  name: string;
-  description: string;
-  isPublic: boolean;
-  owner: {
-    id: number;
-    name: string;
-  };
-  books: Book[];
-}
-
-export default function ListDetails() {
+export default function ListDetails({ isDarkMode, toggleTheme }: ListDetailsProps) {
   const router = useRouter();
   const { id } = router.query;
-  
-  // В реальном приложении данные будут загружаться из Supabase
-  const [list, setList] = useState<BookList>({
-    id: Number(id) || 1,
-    name: 'Классическая литература',
-    description: 'Коллекция классических произведений мировой литературы',
-    isPublic: true,
-    owner: {
-      id: 1,
-      name: 'Иван Иванов'
-    },
-    books: [
-      { 
-        id: 1, 
-        title: 'Война и мир', 
-        author: 'Лев Толстой', 
-        cover: '/placeholder-cover.jpg',
-        rating: 9.2,
-        status: 'read',
-        tags: ['Классика', 'Роман', 'Историческая литература']
-      },
-      { 
-        id: 2, 
-        title: 'Преступление и наказание', 
-        author: 'Федор Достоевский', 
-        cover: '/placeholder-cover.jpg',
-        rating: 8.9,
-        status: 'read',
-        tags: ['Классика', 'Роман', 'Психологическая литература']
-      },
-      { 
-        id: 3, 
-        title: 'Мастер и Маргарита', 
-        author: 'Михаил Булгаков', 
-        cover: '/placeholder-cover.jpg',
-        rating: 9.5,
-        status: 'reading',
-        tags: ['Классика', 'Фантастика', 'Сатира']
-      },
-    ]
-  });
-  
-  // Проверка, является ли текущий пользователь владельцем списка
-  // В реальном приложении будет проверка с Supabase
-  const isOwner = true;
-  
-  // Обработка удаления списка
-  const handleDeleteList = async () => {
-    if (!confirm('Вы уверены, что хотите удалить этот список?')) return;
-    
+
+  const [list, setList] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isOwner, setIsOwner] = useState(false);
+  const { message } = App.useApp();
+
+  useEffect(() => {
+    async function fetchList() {
+      if (!id) return;
+
+      try {
+        setLoading(true);
+
+        // Получаем текущего пользователя
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+
+        // Получаем информацию о списке
+        const { data: listData, error: listError } = await supabase
+          .from('book_lists')
+          .select(`
+            id,
+            title,
+            description,
+            created_at,
+            is_public,
+            user_id,
+            users:user_id (id, email)
+          `)
+          .eq('id', id)
+          .single();
+
+        if (listError) {
+          throw listError;
+        }
+
+        if (!listData) {
+          setError('Список не найден');
+          setLoading(false);
+          return;
+        }
+
+        // Проверяем, является ли текущий пользователь владельцем списка
+        if (currentUser && listData.user_id === currentUser.id) {
+          setIsOwner(true);
+        } else if (!listData.is_public && (!currentUser || listData.user_id !== currentUser.id)) {
+          setError('У вас нет доступа к этому списку');
+          setLoading(false);
+          return;
+        }
+
+        // Получаем книги из списка
+        const { data: listItemsData, error: listItemsError } = await supabase
+          .from('book_list_items')
+          .select(`
+            id,
+            books:book_id (
+              id,
+              title,
+              author,
+              cover_url,
+              rating
+            )
+          `)
+          .eq('list_id', id)
+          .order('created_at', { ascending: false });
+
+        if (listItemsError) {
+          console.error('Ошибка при получении книг из списка:', listItemsError);
+        }
+
+        setList({
+          ...listData,
+          items: listItemsData || []
+        });
+
+      } catch (err) {
+        console.error('Ошибка при загрузке списка:', err);
+        setError('Не удалось загрузить информацию о списке');
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchList();
+  }, [id]);
+
+  const handleDelete = async () => {
     try {
-      // В реальном приложении здесь будет отправка данных в Supabase
-      console.log('Удаление списка:', list.id);
-      
-      // Имитация задержки запроса
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Перенаправление на страницу списков
+      if (!list || !isOwner) return;
+
+      // Удаляем список
+      const { error } = await supabase
+        .from('book_lists')
+        .delete()
+        .eq('id', list.id);
+
+      if (error) {
+        throw error;
+      }
+
+      message.success('Список успешно удален!');
       router.push('/lists');
+
     } catch (error) {
       console.error('Ошибка при удалении списка:', error);
+      message.error('Произошла ошибка при удалении списка');
     }
-  };
-  
-  // Обработка удаления книги из списка
-  const handleRemoveBook = (bookId: number) => {
-    if (!confirm('Вы уверены, что хотите удалить эту книгу из списка?')) return;
-    
-    // В реальном приложении здесь будет отправка данных в Supabase
-    console.log('Удаление книги из списка:', bookId);
-    
-    // Обновление локального состояния
-    setList(prev => ({
-      ...prev,
-      books: prev.books.filter(book => book.id !== bookId)
-    }));
   };
 
   return (
     <>
       <Head>
-        <title>{list.name} | Трекер прочитанных книг</title>
-        <meta name="description" content={list.description} />
+        <title>{list ? `${list.title} | Трекер прочитанных книг` : 'Загрузка списка...'}</title>
+        <meta name="description" content={list ? list.description : 'Информация о списке книг'} />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <Layout>
-        <div className="container mx-auto py-8 px-4">
-          <div className="mb-6">
-            <Button variant="outline" size="sm" onClick={() => router.back()}>
-              Назад
-            </Button>
-          </div>
-          
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">{list.name}</h1>
-            <p className="text-muted-foreground mb-4">{list.description}</p>
-            <div className="flex items-center gap-2 mb-4">
-              <span>Создатель: {list.owner.name}</span>
-              <span>•</span>
-              <span>{list.isPublic ? 'Публичный список' : 'Приватный список'}</span>
-              <span>•</span>
-              <span>{list.books.length} книг</span>
+      <Layout isDarkMode={isDarkMode} toggleTheme={toggleTheme}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 16px' }}>
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '48px 0' }}>
+              <Spin size="large" />
             </div>
-            
-            {isOwner && (
-              <div className="flex gap-2">
-                <Button variant="outline" asChild>
-                  <Link href={`/lists/edit/${list.id}`}>Редактировать</Link>
-                </Button>
-                <Button variant="destructive" onClick={handleDeleteList}>
-                  Удалить список
-                </Button>
-              </div>
-            )}
-          </div>
-          
-          {isOwner && (
-            <Card className="mb-8">
-              <CardHeader>
-                <CardTitle>Добавить книги в список</CardTitle>
-                <CardDescription>Добавьте новые книги в этот список</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <Button asChild>
-                  <Link href={`/lists/${list.id}/add-books`}>Добавить книги</Link>
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-          
-          {/* Список книг */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {list.books.map(book => (
-              <div key={book.id} className="relative">
-                {isOwner && (
-                  <button 
-                    className="absolute top-2 right-2 z-10 bg-background/80 text-destructive p-1 rounded-full"
-                    onClick={() => handleRemoveBook(book.id)}
-                    title="Удалить из списка"
-                  >
-                    ✕
-                  </button>
+          ) : error ? (
+            <div style={{ textAlign: 'center', padding: '48px 0' }}>
+              <Empty
+                description={error}
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+              />
+              <Button style={{ marginTop: 16 }}>
+                <Link href="/lists">Вернуться к спискам</Link>
+              </Button>
+            </div>
+          ) : list ? (
+            <>
+              <Card>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
+                  <div>
+                    <Title level={2}>{list.title}</Title>
+                    <Space>
+                      <Text type="secondary">
+                        Создан: {formatDate(list.created_at)}
+                      </Text>
+                      <Text>
+                        <UserOutlined /> {list.users?.username || 'Пользователь'}
+                      </Text>
+                      {list.is_public && (
+                        <Tag color="blue" icon={<ShareAltOutlined />}>
+                          Публичный
+                        </Tag>
+                      )}
+                    </Space>
+                  </div>
+
+                  {isOwner && (
+                    <Space>
+                      <Button type="primary" icon={<EditOutlined />}>
+                        <Link href={`/lists/edit/${list.id}`}>Редактировать</Link>
+                      </Button>
+                      <Popconfirm
+                        title="Удалить список"
+                        description="Вы уверены, что хотите удалить этот список?"
+                        onConfirm={handleDelete}
+                        okText="Да"
+                        cancelText="Нет"
+                      >
+                        <Button danger icon={<DeleteOutlined />}>
+                          Удалить
+                        </Button>
+                      </Popconfirm>
+                    </Space>
+                  )}
+                </div>
+
+                {list.description && (
+                  <Paragraph style={{ marginBottom: 24 }}>
+                    {list.description}
+                  </Paragraph>
                 )}
-                <BookCard
-                  id={book.id}
-                  title={book.title}
-                  author={book.author}
-                  cover={book.cover}
-                  rating={book.rating}
-                  status={book.status}
-                  tags={book.tags}
-                />
-              </div>
-            ))}
-          </div>
-          
-          {list.books.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground mb-4">В этом списке пока нет книг</p>
-              {isOwner && (
-                <Button asChild>
-                  <Link href={`/lists/${list.id}/add-books`}>Добавить книги</Link>
-                </Button>
-              )}
-            </div>
-          )}
+
+                <Divider />
+
+                <Title level={4}>Книги в списке ({list.items?.length || 0})</Title>
+
+                {list.items?.length === 0 ? (
+                  <Empty description="В этом списке пока нет книг" />
+                ) : (
+                  <List
+                    grid={{ gutter: 16, xs: 1, sm: 2, md: 3, lg: 4 }}
+                    dataSource={list.items}
+                    renderItem={(item: any) => (
+                      <List.Item>
+                        <Card
+                          hoverable
+                          cover={item.books?.cover_url ? (
+                            <img
+                              alt={`Обложка ${item.books.title}`}
+                              src={item.books.cover_url}
+                              style={{ height: 200, objectFit: 'cover' }}
+                            />
+                          ) : (
+                            <div style={{
+                              height: 200,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              background: '#f0f0f0'
+                            }}>
+                              <BookOutlined style={{ fontSize: 48, opacity: 0.5 }} />
+                            </div>
+                          )}
+                        >
+                          <Card.Meta
+                            title={<Link href={`/books/${item.books?.id}`}>{item.books?.title}</Link>}
+                            description={
+                              <Space direction="vertical">
+                                <Text type="secondary">{item.books?.author}</Text>
+                                {item.books?.rating && (
+                                  <Text>Рейтинг: {item.books.rating}/10</Text>
+                                )}
+                              </Space>
+                            }
+                          />
+                        </Card>
+                      </List.Item>
+                    )}
+                  />
+                )}
+              </Card>
+            </>
+          ) : null}
         </div>
       </Layout>
     </>

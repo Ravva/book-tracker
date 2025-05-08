@@ -1,77 +1,117 @@
 import Head from 'next/head';
 import Layout from '@/components/layout/Layout';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { Typography, Button, Card, Row, Col, Tag, Divider, Space, Rate, Spin, Empty, App } from 'antd';
+import { BookOutlined, EditOutlined, DeleteOutlined, DownloadOutlined, ReadOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import { supabase } from '@/lib/supabase';
+import { formatDate } from '@/lib/utils';
 
-// Типы для книги и комментариев
-interface Book {
-  id: number;
-  title: string;
-  author: string;
-  description: string;
-  cover?: string;
-  file?: string;
-  rating?: number;
-  status: 'read' | 'reading' | 'want_to_read';
-  tags: string[];
-  viewCount: number;
-  downloadCount: number;
-  likeCount: number;
+const { Title, Text, Paragraph } = Typography;
+
+interface BookDetailsProps {
+  isDarkMode: boolean;
+  toggleTheme: () => void;
 }
 
-interface Comment {
-  id: number;
-  userId: number;
-  userName: string;
-  content: string;
-  createdAt: string;
-}
-
-export default function BookDetails() {
+export default function BookDetails({ isDarkMode, toggleTheme }: BookDetailsProps) {
   const router = useRouter();
   const { id } = router.query;
 
-  // В реальном приложении данные будут загружаться из Supabase
-  const [book, setBook] = useState<Book>({
-    id: Number(id) || 1,
-    title: 'Мастер и Маргарита',
-    author: 'Михаил Булгаков',
-    description: 'Роман Михаила Афанасьевича Булгакова, работа над которым началась в конце 1920-х годов и продолжалась вплоть до смерти писателя. Роман относится к незавершённым произведениям; редактирование и сведение воедино черновых записей производилось уже после смерти Булгакова.',
-    cover: '/placeholder-cover.jpg',
-    file: '/placeholder-file.fb2',
-    rating: 9.5,
-    status: 'reading',
-    tags: ['Классика', 'Фантастика', 'Сатира'],
-    viewCount: 1245,
-    downloadCount: 567,
-    likeCount: 890
-  });
+  const [book, setBook] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { message } = App.useApp();
 
-  const [comments, setComments] = useState<Comment[]>([
-    {
-      id: 1,
-      userId: 1,
-      userName: 'Иван Иванов',
-      content: 'Одна из лучших книг, которые я когда-либо читал. Глубокий смысл, интересный сюжет, яркие персонажи.',
-      createdAt: '2023-05-15T14:30:00Z'
-    },
-    {
-      id: 2,
-      userId: 2,
-      userName: 'Мария Петрова',
-      content: 'Перечитываю уже третий раз, и каждый раз нахожу что-то новое. Настоящая классика!',
-      createdAt: '2023-06-20T09:15:00Z'
+  useEffect(() => {
+    async function fetchBook() {
+      if (!id) return;
+
+      try {
+        setLoading(true);
+
+        // Получаем информацию о книге
+        const { data: bookData, error: bookError } = await supabase
+          .from('books')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (bookError) {
+          throw bookError;
+        }
+
+        if (!bookData) {
+          setError('Книга не найдена');
+          setLoading(false);
+          return;
+        }
+
+        // Получаем теги для книги
+        const { data: bookTagsData, error: bookTagsError } = await supabase
+          .from('book_tags')
+          .select('tag_id')
+          .eq('book_id', bookData.id);
+
+        if (bookTagsError) {
+          console.error('Ошибка при получении тегов книги:', bookTagsError);
+        }
+
+        // Получаем информацию о тегах
+        let tags: string[] = [];
+        if (bookTagsData && bookTagsData.length > 0) {
+          const tagIds = bookTagsData.map(bt => bt.tag_id);
+
+          const { data: tagsData, error: tagsError } = await supabase
+            .from('tags')
+            .select('name')
+            .in('id', tagIds);
+
+          if (tagsError) {
+            console.error('Ошибка при получении информации о тегах:', tagsError);
+          } else {
+            tags = tagsData?.map(tag => tag.name) || [];
+          }
+        }
+
+        // Получаем комментарии к книге
+        const { data: commentsData, error: commentsError } = await supabase
+          .from('comments')
+          .select(`
+            id,
+            content,
+            created_at,
+            users:user_id (id, email)
+          `)
+          .eq('book_id', bookData.id)
+          .order('created_at', { ascending: false });
+
+        if (commentsError) {
+          console.error('Ошибка при получении комментариев:', commentsError);
+        }
+
+        setBook({
+          ...bookData,
+          tags,
+          comments: commentsData || []
+        });
+
+      } catch (err) {
+        console.error('Ошибка при загрузке книги:', err);
+        setError('Не удалось загрузить информацию о книге');
+      } finally {
+        setLoading(false);
+      }
     }
-  ]);
 
-  const [newComment, setNewComment] = useState('');
-  const [isLiked, setIsLiked] = useState(false);
+    fetchBook();
+  }, [id]);
 
   // Функция для отображения статуса на русском
-  const getStatusText = (status: string) => {
+  const getStatusText = (status?: string) => {
+    if (!status) return null;
+
     switch (status) {
       case 'read': return 'Прочитано';
       case 'reading': return 'Читаю';
@@ -80,211 +120,156 @@ export default function BookDetails() {
     }
   };
 
-  // Обработка добавления комментария
-  const handleAddComment = () => {
-    if (!newComment.trim()) return;
+  // Функция для получения иконки статуса
+  const getStatusIcon = (status?: string) => {
+    if (!status) return null;
 
-    const comment: Comment = {
-      id: comments.length + 1,
-      userId: 3, // В реальном приложении будет ID текущего пользователя
-      userName: 'Текущий пользователь', // В реальном приложении будет имя текущего пользователя
-      content: newComment,
-      createdAt: new Date().toISOString()
-    };
-
-    setComments([...comments, comment]);
-    setNewComment('');
-  };
-
-  // Обработка лайка
-  const handleLike = () => {
-    setIsLiked(!isLiked);
-    setBook(prev => ({
-      ...prev,
-      likeCount: isLiked ? prev.likeCount - 1 : prev.likeCount + 1
-    }));
-  };
-
-  // Обработка скачивания
-  const handleDownload = () => {
-    // В реальном приложении здесь будет логика скачивания файла
-    setBook(prev => ({
-      ...prev,
-      downloadCount: prev.downloadCount + 1
-    }));
-    alert('Скачивание файла...');
-  };
-
-  // Форматирование даты
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('ru-RU', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
+    switch (status) {
+      case 'read': return <ReadOutlined />;
+      case 'reading': return <BookOutlined />;
+      case 'want_to_read': return <ClockCircleOutlined />;
+      default: return null;
+    }
   };
 
   return (
     <>
       <Head>
-        <title>{book.title} | Трекер прочитанных книг</title>
-        <meta name="description" content={`${book.title} - ${book.author}`} />
+        <title>{book ? `${book.title} | Трекер прочитанных книг` : 'Загрузка книги...'}</title>
+        <meta name="description" content={book ? `${book.title} от ${book.author}` : 'Информация о книге'} />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <Layout>
-        <div className="container mx-auto py-8 px-4">
-          <div className="mb-6">
-            <Button variant="outline" size="sm" onClick={() => router.back()}>
-              Назад
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-10">
-            {/* Обложка и основная информация */}
-            <div className="md:col-span-1">
-              <div className="bg-muted rounded-lg overflow-hidden mb-4 aspect-[2/3] flex items-center justify-center">
-                {book.cover ? (
-                  <img
-                    src={book.cover}
-                    alt={`Обложка ${book.title}`}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="text-muted-foreground">Нет обложки</div>
-                )}
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex justify-between">
-                  <Button
-                    variant={isLiked ? "default" : "outline"}
-                    size="sm"
-                    onClick={handleLike}
-                  >
-                    {isLiked ? 'Понравилось' : 'Нравится'} ({book.likeCount})
-                  </Button>
-
-                  {book.file && (
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleDownload}
-                    >
-                      Скачать ({book.downloadCount})
-                    </Button>
-                  )}
-                </div>
-
-                <div className="text-sm text-muted-foreground">
-                  Просмотров: {book.viewCount}
-                </div>
-
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {book.tags.map(tag => (
-                    <span
-                      key={tag}
-                      className="px-2 py-1 bg-muted text-xs rounded-full"
-                    >
-                      {tag}
-                    </span>
-                  ))}
-                </div>
-              </div>
+      <Layout isDarkMode={isDarkMode} toggleTheme={toggleTheme}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 16px' }}>
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '48px 0' }}>
+              <Spin size="large" />
             </div>
-
-            {/* Детали книги */}
-            <div className="md:col-span-2">
-              <h1 className="text-3xl font-bold mb-2">{book.title}</h1>
-              <h2 className="text-xl text-muted-foreground mb-4">{book.author}</h2>
-
-              <div className="grid grid-cols-2 gap-4 mb-6">
-                <div>
-                  <div className="text-sm font-medium">Статус</div>
-                  <div>{getStatusText(book.status)}</div>
-                </div>
-
-                {book.rating && (
-                  <div>
-                    <div className="text-sm font-medium">Рейтинг</div>
-                    <div>{book.rating}/10</div>
-                  </div>
-                )}
-              </div>
-
-              <div className="mb-8">
-                <h3 className="text-lg font-medium mb-2">Описание</h3>
-                <p className="text-muted-foreground">{book.description}</p>
-              </div>
-
-              {/* Комментарии */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>Комментарии ({comments.length})</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4 mb-6">
-                    {comments.map(comment => (
-                      <div key={comment.id} className="border-b border-input pb-4">
-                        <div className="flex justify-between mb-1">
-                          <div className="font-medium">{comment.userName}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {formatDate(comment.createdAt)}
-                          </div>
-                        </div>
-                        <p>{comment.content}</p>
-                      </div>
-                    ))}
-
-                    {comments.length === 0 && (
-                      <div className="text-center py-4 text-muted-foreground">
-                        Нет комментариев
+          ) : error ? (
+            <div style={{ textAlign: 'center', padding: '48px 0' }}>
+              <Empty
+                description={error}
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+              />
+              <Button style={{ marginTop: 16 }}>
+                <Link href="/books">Вернуться к списку книг</Link>
+              </Button>
+            </div>
+          ) : book ? (
+            <>
+              <Row gutter={[24, 24]}>
+                <Col xs={24} md={8} lg={6}>
+                  <div style={{ marginBottom: 16 }}>
+                    {book.cover_url ? (
+                      <img
+                        src={book.cover_url}
+                        alt={`Обложка ${book.title}`}
+                        style={{ width: '100%', borderRadius: 8 }}
+                      />
+                    ) : (
+                      <div style={{
+                        height: 300,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        background: '#f0f0f0',
+                        borderRadius: 8
+                      }}>
+                        <BookOutlined style={{ fontSize: 64, opacity: 0.5 }} />
                       </div>
                     )}
                   </div>
 
-                  <div className="space-y-2">
-                    <textarea
-                      className="w-full min-h-[100px] p-2 border border-input rounded-md bg-background"
-                      placeholder="Добавьте комментарий..."
-                      value={newComment}
-                      onChange={(e) => setNewComment(e.target.value)}
-                    />
-                    <Button
-                      onClick={handleAddComment}
-                      disabled={!newComment.trim()}
-                    >
-                      Отправить
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
+                  <Space direction="vertical" style={{ width: '100%' }}>
+                    {book.status && (
+                      <Card size="small">
+                        <Space>
+                          {getStatusIcon(book.status)}
+                          <Text>{getStatusText(book.status)}</Text>
+                        </Space>
+                      </Card>
+                    )}
 
-          {/* Похожие книги */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Похожие книги</CardTitle>
-              <CardDescription>Книги с похожими тегами</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {[1, 2, 3, 4].map(i => (
-                  <div key={i} className="border border-input rounded-lg p-4">
-                    <div className="font-medium mb-1">Книга {i}</div>
-                    <div className="text-sm text-muted-foreground mb-2">Автор {i}</div>
-                    <Button variant="outline" size="sm" asChild>
-                      <Link href={`/books/${i}`}>Подробнее</Link>
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
+                    {book.rating !== undefined && (
+                      <Card size="small">
+                        <div>
+                          <Text>Рейтинг:</Text>
+                          <div>
+                            <Rate disabled defaultValue={book.rating / 2} allowHalf />
+                            <Text style={{ marginLeft: 8 }}>{book.rating}/10</Text>
+                          </div>
+                        </div>
+                      </Card>
+                    )}
+
+                    <Card size="small">
+                      <Space direction="vertical" style={{ width: '100%' }}>
+                        <Button type="primary" icon={<EditOutlined />} block>
+                          <Link href={`/books/edit/${book.id}`}>Редактировать</Link>
+                        </Button>
+
+                        {book.file_url && (
+                          <Button icon={<DownloadOutlined />} block>
+                            <a href={book.file_url} download>Скачать книгу</a>
+                          </Button>
+                        )}
+
+                        <Button danger icon={<DeleteOutlined />} block>
+                          Удалить
+                        </Button>
+                      </Space>
+                    </Card>
+                  </Space>
+                </Col>
+
+                <Col xs={24} md={16} lg={18}>
+                  <Card>
+                    <Title level={2}>{book.title}</Title>
+                    <Title level={4} type="secondary" style={{ marginTop: 0 }}>{book.author}</Title>
+
+                    {book.tags && book.tags.length > 0 && (
+                      <div style={{ margin: '16px 0' }}>
+                        {book.tags.map((tag: string) => (
+                          <Tag key={tag} style={{ marginBottom: 8 }}>{tag}</Tag>
+                        ))}
+                      </div>
+                    )}
+
+                    <Divider />
+
+                    <Title level={4}>Описание</Title>
+                    <Paragraph>
+                      {book.description || 'Описание отсутствует'}
+                    </Paragraph>
+
+                    <Divider />
+
+                    <Title level={4}>Комментарии</Title>
+                    {book.comments && book.comments.length > 0 ? (
+                      <Space direction="vertical" style={{ width: '100%' }}>
+                        {book.comments.map((comment: any) => (
+                          <Card key={comment.id} size="small" style={{ marginBottom: 16 }}>
+                            <div>
+                              <Text strong>{comment.users?.email ? comment.users.email.split('@')[0] : 'Пользователь'}</Text>
+                              <Text type="secondary" style={{ marginLeft: 8 }}>
+                                {formatDate(comment.created_at)}
+                              </Text>
+                            </div>
+                            <Paragraph style={{ marginTop: 8 }}>
+                              {comment.content}
+                            </Paragraph>
+                          </Card>
+                        ))}
+                      </Space>
+                    ) : (
+                      <Empty description="Нет комментариев" />
+                    )}
+                  </Card>
+                </Col>
+              </Row>
+            </>
+          ) : null}
         </div>
       </Layout>
     </>

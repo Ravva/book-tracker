@@ -1,6 +1,6 @@
 import Head from 'next/head';
 import Layout from '@/components/layout/Layout';
-import { Typography, Row, Col, Card, List, Statistic, Spin, Empty, Button } from 'antd';
+import { Typography, Row, Col, Card, List, Statistic, Spin, Empty, Button, Space } from 'antd';
 import { BookOutlined, UserOutlined, CommentOutlined, StarOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
@@ -91,21 +91,43 @@ export default function Home({ isDarkMode, toggleTheme }: HomeProps) {
       </Head>
       <Layout isDarkMode={isDarkMode} toggleTheme={toggleTheme}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 16px' }}>
-          <Title level={2} style={{ marginBottom: 24 }}>Дашборд</Title>
+          <Title level={2} style={{ marginBottom: 32, fontWeight: 600 }}>Дашборд</Title>
 
           <Row gutter={[24, 24]}>
             {/* Популярные книги */}
             <Col xs={24} md={12} lg={8}>
               <Card
-                title="Популярные книги"
-                extra={<Link href="/books">Все книги</Link>}
+                title={
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <BookOutlined style={{ color: '#1677ff' }} />
+                    <span>Популярные книги</span>
+                  </div>
+                }
+                extra={<Link href="/books" style={{ color: '#1677ff' }}>Все книги</Link>}
+                style={{
+                  borderRadius: '8px',
+                  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.06)',
+                  height: '100%'
+                }}
+                styles={{
+                  header: {
+                    borderBottom: isDarkMode ? '1px solid #303030' : '1px solid #f0f0f0',
+                    padding: '16px 24px'
+                  },
+                  body: {
+                    padding: '16px 24px'
+                  }
+                }}
               >
                 {loading ? (
-                  <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                  <div style={{ textAlign: 'center', padding: '40px 0' }}>
                     <Spin />
                   </div>
                 ) : popularBooks.length === 0 ? (
-                  <Empty description="Нет данных о книгах" />
+                  <Empty
+                    description="Нет данных о книгах"
+                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  />
                 ) : (
                   <List
                     itemLayout="horizontal"
@@ -113,15 +135,27 @@ export default function Home({ isDarkMode, toggleTheme }: HomeProps) {
                     renderItem={(book) => (
                       <List.Item>
                         <List.Item.Meta
-                          title={<Link href={`/books/${book.id}`}>{book.title}</Link>}
+                          avatar={<BookOutlined style={{ fontSize: 20, color: '#1677ff' }} />}
+                          title={
+                            <Link
+                              href={`/books/${book.id}`}
+                              style={{
+                                fontSize: '16px',
+                                fontWeight: 500,
+                                color: isDarkMode ? '#e6f4ff' : '#1677ff'
+                              }}
+                            >
+                              {book.title}
+                            </Link>
+                          }
                           description={
-                            <>
+                            <Space direction="vertical" size={2} style={{ width: '100%' }}>
                               <Text type="secondary">{book.author}</Text>
                               <div>
                                 <Text>Рейтинг: </Text>
-                                <Text strong>{book.rating}/10</Text>
+                                <Text strong style={{ color: '#faad14' }}>{book.rating}/10</Text>
                               </div>
-                            </>
+                            </Space>
                           }
                         />
                       </List.Item>
@@ -133,18 +167,40 @@ export default function Home({ isDarkMode, toggleTheme }: HomeProps) {
 
             {/* Активность пользователей */}
             <Col xs={24} md={12} lg={8}>
-              <Card title="Активность пользователей">
+              <Card
+                title={
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <UserOutlined style={{ color: '#1677ff' }} />
+                    <span>Активность пользователей</span>
+                  </div>
+                }
+                style={{
+                  borderRadius: '8px',
+                  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.06)',
+                  height: '100%'
+                }}
+                styles={{
+                  header: {
+                    borderBottom: isDarkMode ? '1px solid #303030' : '1px solid #f0f0f0',
+                    padding: '16px 24px'
+                  },
+                  body: {
+                    padding: '16px 24px'
+                  }
+                }}
+              >
                 <List
                   itemLayout="horizontal"
                   dataSource={recentActivity}
                   renderItem={(activity) => (
                     <List.Item>
                       <List.Item.Meta
+                        avatar={<UserOutlined style={{ fontSize: 20, color: '#1677ff' }} />}
                         description={
-                          <Paragraph>
-                            <Text strong>{activity.user}</Text>{' '}
+                          <Paragraph style={{ margin: 0 }}>
+                            <Text strong style={{ color: isDarkMode ? '#e6f4ff' : 'inherit' }}>{activity.user}</Text>{' '}
                             <Text type="secondary">{activity.action}</Text>{' '}
-                            <Text strong>{activity.book}</Text>
+                            <Text strong style={{ color: isDarkMode ? '#e6f4ff' : 'inherit' }}>{activity.book}</Text>
                           </Paragraph>
                         }
                       />
@@ -156,13 +212,37 @@ export default function Home({ isDarkMode, toggleTheme }: HomeProps) {
 
             {/* Последние комментарии */}
             <Col xs={24} md={12} lg={8}>
-              <Card title="Комментарии">
+              <Card
+                title={
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <CommentOutlined style={{ color: '#1677ff' }} />
+                    <span>Комментарии</span>
+                  </div>
+                }
+                style={{
+                  borderRadius: '8px',
+                  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.06)',
+                  height: '100%'
+                }}
+                styles={{
+                  header: {
+                    borderBottom: isDarkMode ? '1px solid #303030' : '1px solid #f0f0f0',
+                    padding: '16px 24px'
+                  },
+                  body: {
+                    padding: '16px 24px'
+                  }
+                }}
+              >
                 {loading ? (
-                  <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                  <div style={{ textAlign: 'center', padding: '40px 0' }}>
                     <Spin />
                   </div>
                 ) : recentComments.length === 0 ? (
-                  <Empty description="Нет комментариев" />
+                  <Empty
+                    description="Нет комментариев"
+                    image={Empty.PRESENTED_IMAGE_SIMPLE}
+                  />
                 ) : (
                   <List
                     itemLayout="horizontal"
@@ -170,7 +250,13 @@ export default function Home({ isDarkMode, toggleTheme }: HomeProps) {
                     renderItem={(comment) => (
                       <List.Item>
                         <List.Item.Meta
-                          title={<Text>{comment.user} о книге "{comment.book}"</Text>}
+                          avatar={<CommentOutlined style={{ fontSize: 20, color: '#1677ff' }} />}
+                          title={
+                            <Text style={{ fontSize: '14px' }}>
+                              <Text strong style={{ color: isDarkMode ? '#e6f4ff' : 'inherit' }}>{comment.user}</Text> о книге "
+                              <Text strong style={{ color: isDarkMode ? '#e6f4ff' : 'inherit' }}>{comment.book}</Text>"
+                            </Text>
+                          }
                           description={<Text type="secondary">{comment.comment}</Text>}
                         />
                       </List.Item>
@@ -182,35 +268,88 @@ export default function Home({ isDarkMode, toggleTheme }: HomeProps) {
           </Row>
 
           {/* Статистика */}
-          <Card title="Общая статистика" style={{ marginTop: 24 }}>
-            <Row gutter={[16, 16]}>
+          <Card
+            title={
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <StarOutlined style={{ color: '#1677ff' }} />
+                <span>Общая статистика</span>
+              </div>
+            }
+            style={{
+              marginTop: 24,
+              borderRadius: '8px',
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.06)'
+            }}
+            styles={{
+              header: {
+                borderBottom: isDarkMode ? '1px solid #303030' : '1px solid #f0f0f0',
+                padding: '16px 24px'
+              },
+              body: {
+                padding: '24px'
+              }
+            }}
+          >
+            <Row gutter={[32, 32]}>
               <Col xs={12} md={6}>
                 <Statistic
-                  title="Книг в базе"
+                  title={
+                    <Text style={{ fontSize: '14px', color: isDarkMode ? '#a6a6a6' : 'rgba(0, 0, 0, 0.45)' }}>
+                      Книг в базе
+                    </Text>
+                  }
                   value={1245}
-                  prefix={<BookOutlined />}
+                  valueStyle={{
+                    color: isDarkMode ? '#e6f4ff' : '#1677ff',
+                    fontWeight: 600
+                  }}
+                  prefix={<BookOutlined style={{ marginRight: '8px' }} />}
                 />
               </Col>
               <Col xs={12} md={6}>
                 <Statistic
-                  title="Пользователей"
+                  title={
+                    <Text style={{ fontSize: '14px', color: isDarkMode ? '#a6a6a6' : 'rgba(0, 0, 0, 0.45)' }}>
+                      Пользователей
+                    </Text>
+                  }
                   value={348}
-                  prefix={<UserOutlined />}
+                  valueStyle={{
+                    color: isDarkMode ? '#e6f4ff' : '#1677ff',
+                    fontWeight: 600
+                  }}
+                  prefix={<UserOutlined style={{ marginRight: '8px' }} />}
                 />
               </Col>
               <Col xs={12} md={6}>
                 <Statistic
-                  title="Отзывов"
+                  title={
+                    <Text style={{ fontSize: '14px', color: isDarkMode ? '#a6a6a6' : 'rgba(0, 0, 0, 0.45)' }}>
+                      Отзывов
+                    </Text>
+                  }
                   value={5672}
-                  prefix={<CommentOutlined />}
+                  valueStyle={{
+                    color: isDarkMode ? '#e6f4ff' : '#1677ff',
+                    fontWeight: 600
+                  }}
+                  prefix={<CommentOutlined style={{ marginRight: '8px' }} />}
                 />
               </Col>
               <Col xs={12} md={6}>
                 <Statistic
-                  title="Средний рейтинг"
+                  title={
+                    <Text style={{ fontSize: '14px', color: isDarkMode ? '#a6a6a6' : 'rgba(0, 0, 0, 0.45)' }}>
+                      Средний рейтинг
+                    </Text>
+                  }
                   value={8.7}
                   precision={1}
-                  prefix={<StarOutlined />}
+                  valueStyle={{
+                    color: '#faad14',
+                    fontWeight: 600
+                  }}
+                  prefix={<StarOutlined style={{ marginRight: '8px' }} />}
                   suffix="/10"
                 />
               </Col>

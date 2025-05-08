@@ -1,92 +1,73 @@
 import Head from 'next/head';
 import Layout from '@/components/layout/Layout';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { Typography, Button, Card, List, Input, Space, Spin, Empty, Tag, Divider } from 'antd';
+import { PlusOutlined, BookOutlined, UserOutlined, ShareAltOutlined } from '@ant-design/icons';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/router';
+import { supabase } from '@/lib/supabase';
+import { formatDate } from '@/lib/utils';
 
-interface BookList {
-  id: number;
-  name: string;
-  description: string;
-  isPublic: boolean;
-  bookCount: number;
-  owner: {
-    id: number;
-    name: string;
-  };
+const { Title, Text, Paragraph } = Typography;
+const { Search } = Input;
+
+interface ListsProps {
+  isDarkMode: boolean;
+  toggleTheme: () => void;
 }
 
-export default function Lists() {
+export default function Lists({ isDarkMode, toggleTheme }: ListsProps) {
+  const router = useRouter();
+  const [lists, setLists] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
-  
-  // В реальном приложении данные будут загружаться из Supabase
-  const allLists: BookList[] = [
-    {
-      id: 1,
-      name: 'Классическая литература',
-      description: 'Коллекция классических произведений мировой литературы',
-      isPublic: true,
-      bookCount: 15,
-      owner: {
-        id: 1,
-        name: 'Иван Иванов'
+
+  useEffect(() => {
+    async function fetchLists() {
+      try {
+        setLoading(true);
+
+        // Получаем списки книг
+        const { data: listsData, error: listsError } = await supabase
+          .from('book_lists')
+          .select(`
+            id,
+            title,
+            description,
+            created_at,
+            is_public,
+            users:user_id (id, email),
+            book_list_items:book_list_items (
+              id,
+              books:book_id (id, title, author)
+            )
+          `)
+          .order('created_at', { ascending: false });
+
+        if (listsError) {
+          throw listsError;
+        }
+
+        setLists(listsData || []);
+
+      } catch (err) {
+        console.error('Ошибка при загрузке списков:', err);
+        setError('Не удалось загрузить списки книг');
+      } finally {
+        setLoading(false);
       }
-    },
-    {
-      id: 2,
-      name: 'Научная фантастика',
-      description: 'Лучшие научно-фантастические романы всех времен',
-      isPublic: true,
-      bookCount: 12,
-      owner: {
-        id: 2,
-        name: 'Мария Петрова'
-      }
-    },
-    {
-      id: 3,
-      name: 'Книги для саморазвития',
-      description: 'Книги по психологии, бизнесу и личностному росту',
-      isPublic: true,
-      bookCount: 8,
-      owner: {
-        id: 3,
-        name: 'Алексей Смирнов'
-      }
-    },
-    {
-      id: 4,
-      name: 'Детективы',
-      description: 'Захватывающие детективные истории',
-      isPublic: true,
-      bookCount: 10,
-      owner: {
-        id: 1,
-        name: 'Иван Иванов'
-      }
-    },
-    {
-      id: 5,
-      name: 'Мои любимые книги',
-      description: 'Личная коллекция любимых произведений',
-      isPublic: true,
-      bookCount: 7,
-      owner: {
-        id: 1,
-        name: 'Иван Иванов'
-      }
-    },
-  ];
-  
+    }
+
+    fetchLists();
+  }, []);
+
   // Фильтрация списков по поисковому запросу
-  const filteredLists = allLists.filter(list => {
-    return searchQuery === '' || 
-      list.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      list.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      list.owner.name.toLowerCase().includes(searchQuery.toLowerCase());
-  });
+  const filteredLists = lists.filter(list =>
+    searchQuery === '' ||
+    list.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (list.description && list.description.toLowerCase().includes(searchQuery.toLowerCase()))
+  );
 
   return (
     <>
@@ -96,51 +77,102 @@ export default function Lists() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <Layout>
-        <div className="container mx-auto py-8 px-4">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-3xl font-bold">Списки книг</h1>
-            <Button asChild>
+      <Layout isDarkMode={isDarkMode} toggleTheme={toggleTheme}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 16px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+            <Title level={2}>Списки книг</Title>
+            <Button type="primary" icon={<PlusOutlined />}>
               <Link href="/lists/create">Создать список</Link>
             </Button>
           </div>
-          
-          {/* Поиск */}
-          <div className="mb-8">
-            <Input
-              placeholder="Поиск по названию, описанию или автору"
+
+          <Card style={{ marginBottom: 24 }}>
+            <Search
+              placeholder="Поиск по названию или описанию"
+              allowClear
+              enterButton
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="max-w-md"
+              style={{ maxWidth: 500 }}
             />
-          </div>
-          
-          {/* Списки книг */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredLists.map(list => (
-              <Card key={list.id}>
-                <CardHeader>
-                  <CardTitle>{list.name}</CardTitle>
-                  <CardDescription>
-                    Создатель: {list.owner.name} • {list.bookCount} книг
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-muted-foreground line-clamp-2">{list.description}</p>
-                </CardContent>
-                <CardFooter>
-                  <Button variant="outline" className="w-full" asChild>
-                    <Link href={`/lists/${list.id}`}>Открыть</Link>
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-          
-          {filteredLists.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-muted-foreground">Списки не найдены</p>
+          </Card>
+
+          {loading ? (
+            <div style={{ textAlign: 'center', padding: '48px 0' }}>
+              <Spin size="large" />
             </div>
+          ) : error ? (
+            <div style={{ textAlign: 'center', padding: '48px 0' }}>
+              <Empty
+                description={error}
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+              />
+            </div>
+          ) : filteredLists.length === 0 ? (
+            <Empty description="Списки не найдены" />
+          ) : (
+            <List
+              itemLayout="vertical"
+              dataSource={filteredLists}
+              renderItem={(list) => (
+                <List.Item
+                  key={list.id}
+                  actions={[
+                    <Space key="books">
+                      <BookOutlined />
+                      <Text>{list.book_list_items?.length || 0} книг</Text>
+                    </Space>,
+                    <Space key="user">
+                      <UserOutlined />
+                      <Text>{list.users?.email ? list.users.email.split('@')[0] : 'Пользователь'}</Text>
+                    </Space>,
+                    list.is_public && (
+                      <Space key="public">
+                        <ShareAltOutlined />
+                        <Text>Публичный</Text>
+                      </Space>
+                    ),
+                  ]}
+                >
+                  <List.Item.Meta
+                    title={
+                      <Link href={`/lists/${list.id}`}>
+                        <Title level={4}>{list.title}</Title>
+                      </Link>
+                    }
+                    description={
+                      <Space direction="vertical" style={{ width: '100%' }}>
+                        <Text type="secondary">
+                          Создан: {formatDate(list.created_at)}
+                        </Text>
+                        {list.description && (
+                          <Paragraph ellipsis={{ rows: 2 }}>
+                            {list.description}
+                          </Paragraph>
+                        )}
+                      </Space>
+                    }
+                  />
+                  {list.book_list_items && list.book_list_items.length > 0 && (
+                    <>
+                      <Divider style={{ margin: '12px 0' }} />
+                      <div>
+                        {list.book_list_items.slice(0, 3).map((item: any) => (
+                          <Tag key={item.id} style={{ marginBottom: 8 }}>
+                            {item.books?.title || 'Неизвестная книга'}
+                          </Tag>
+                        ))}
+                        {list.book_list_items.length > 3 && (
+                          <Tag style={{ marginBottom: 8 }}>
+                            +{list.book_list_items.length - 3} еще
+                          </Tag>
+                        )}
+                      </div>
+                    </>
+                  )}
+                </List.Item>
+              )}
+            />
           )}
         </div>
       </Layout>

@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import Layout from '@/components/layout/Layout';
 import { Typography, Row, Col, Card, Input, Select, Button, Space, Spin, Empty, Pagination, Tag, Rate } from 'antd';
-import { PlusOutlined, BookOutlined, ReadOutlined, ClockCircleOutlined } from '@ant-design/icons';
+import { PlusOutlined, BookOutlined, ReadOutlined, ClockCircleOutlined, ArrowRightOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
@@ -170,6 +170,18 @@ export default function Books({ isDarkMode, toggleTheme }: BooksProps) {
     }
   };
 
+  // Функция для получения цвета статуса
+  const getStatusColor = (status?: string) => {
+    if (!status) return '';
+
+    switch (status) {
+      case 'read': return '#52c41a';
+      case 'reading': return '#1677ff';
+      case 'want_to_read': return '#faad14';
+      default: return '';
+    }
+  };
+
   return (
     <>
       <Head>
@@ -180,32 +192,63 @@ export default function Books({ isDarkMode, toggleTheme }: BooksProps) {
       </Head>
       <Layout isDarkMode={isDarkMode} toggleTheme={toggleTheme}>
         <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 16px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-            <Title level={2}>Каталог книг</Title>
-            <Button type="primary" icon={<PlusOutlined />}>
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginBottom: 24,
+            flexWrap: 'wrap',
+            gap: '16px'
+          }}>
+            <Title level={2} style={{ margin: 0 }}>Каталог книг</Title>
+            <Button
+              type="primary"
+              icon={<PlusOutlined />}
+              size="large"
+              shape="round"
+            >
               <Link href="/books/add">Добавить книгу</Link>
             </Button>
           </div>
 
           {loading ? (
-            <div style={{ textAlign: 'center', padding: '48px 0' }}>
+            <div style={{
+              textAlign: 'center',
+              padding: '80px 0',
+              background: isDarkMode ? '#1f1f1f' : '#ffffff',
+              borderRadius: '8px',
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.06)'
+            }}>
               <Spin size="large" />
             </div>
           ) : error ? (
-            <div style={{ textAlign: 'center', padding: '48px 0' }}>
+            <div style={{
+              textAlign: 'center',
+              padding: '80px 0',
+              background: isDarkMode ? '#1f1f1f' : '#ffffff',
+              borderRadius: '8px',
+              boxShadow: '0 1px 2px rgba(0, 0, 0, 0.06)'
+            }}>
               <Text type="danger" style={{ fontSize: 16 }}>{error}</Text>
             </div>
           ) : (
             <>
               {/* Фильтры */}
-              <Card style={{ marginBottom: 24 }}>
-                <Row gutter={[16, 16]}>
+              <Card
+                style={{
+                  marginBottom: 24,
+                  borderRadius: '8px',
+                  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.06)'
+                }}
+              >
+                <Row gutter={[24, 24]}>
                   <Col xs={24} md={8}>
                     <Search
                       placeholder="Поиск по названию или автору"
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       allowClear
+                      size="large"
                     />
                   </Col>
                   <Col xs={24} md={8}>
@@ -215,10 +258,27 @@ export default function Books({ isDarkMode, toggleTheme }: BooksProps) {
                       value={selectedStatus}
                       onChange={(value) => setSelectedStatus(value)}
                       allowClear
+                      size="large"
+                      optionLabelProp="label"
                     >
-                      <Option value="read">Прочитано</Option>
-                      <Option value="reading">Читаю</Option>
-                      <Option value="want_to_read">Хочу прочитать</Option>
+                      <Option value="read" label="Прочитано">
+                        <Space>
+                          <ReadOutlined style={{ color: '#52c41a' }} />
+                          <span>Прочитано</span>
+                        </Space>
+                      </Option>
+                      <Option value="reading" label="Читаю">
+                        <Space>
+                          <BookOutlined style={{ color: '#1677ff' }} />
+                          <span>Читаю</span>
+                        </Space>
+                      </Option>
+                      <Option value="want_to_read" label="Хочу прочитать">
+                        <Space>
+                          <ClockCircleOutlined style={{ color: '#faad14' }} />
+                          <span>Хочу прочитать</span>
+                        </Space>
+                      </Option>
                     </Select>
                   </Col>
                   <Col xs={24} md={8}>
@@ -228,6 +288,7 @@ export default function Books({ isDarkMode, toggleTheme }: BooksProps) {
                       value={selectedTag}
                       onChange={(value) => setSelectedTag(value)}
                       allowClear
+                      size="large"
                     >
                       {allTags.map(tag => (
                         <Option key={tag} value={tag}>{tag}</Option>
@@ -241,7 +302,14 @@ export default function Books({ isDarkMode, toggleTheme }: BooksProps) {
               {filteredBooks.length === 0 ? (
                 <Empty
                   description="Книги не найдены"
-                  style={{ margin: '48px 0' }}
+                  style={{
+                    margin: '48px 0',
+                    padding: '40px',
+                    background: isDarkMode ? '#1f1f1f' : '#ffffff',
+                    borderRadius: '8px',
+                    boxShadow: '0 1px 2px rgba(0, 0, 0, 0.06)'
+                  }}
+                  image={Empty.PRESENTED_IMAGE_SIMPLE}
                 />
               ) : (
                 <>
@@ -250,25 +318,70 @@ export default function Books({ isDarkMode, toggleTheme }: BooksProps) {
                       <Col xs={24} sm={12} lg={8} key={book.id}>
                         <Card
                           hoverable
+                          style={{
+                            borderRadius: '8px',
+                            overflow: 'hidden',
+                            boxShadow: '0 1px 2px rgba(0, 0, 0, 0.06)',
+                            transition: 'all 0.3s',
+                          }}
                           cover={book.cover_url ? (
-                            <img
-                              alt={`Обложка ${book.title}`}
-                              src={book.cover_url}
-                              style={{ height: 200, objectFit: 'cover' }}
-                            />
+                            <div style={{ position: 'relative' }}>
+                              <img
+                                alt={`Обложка ${book.title}`}
+                                src={book.cover_url}
+                                style={{
+                                  height: 200,
+                                  objectFit: 'cover',
+                                  width: '100%',
+                                }}
+                              />
+                              {book.status && (
+                                <Tag
+                                  style={{
+                                    position: 'absolute',
+                                    top: 12,
+                                    right: 12,
+                                    backgroundColor: getStatusColor(book.status),
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '16px',
+                                    padding: '0 8px',
+                                  }}
+                                >
+                                  {getStatusText(book.status)}
+                                </Tag>
+                              )}
+                            </div>
                           ) : (
                             <div style={{
                               height: 200,
                               display: 'flex',
                               alignItems: 'center',
                               justifyContent: 'center',
-                              background: '#f0f0f0'
+                              background: '#f5f5f5',
+                              position: 'relative',
                             }}>
                               <BookOutlined style={{ fontSize: 48, opacity: 0.5 }} />
+                              {book.status && (
+                                <Tag
+                                  style={{
+                                    position: 'absolute',
+                                    top: 12,
+                                    right: 12,
+                                    backgroundColor: getStatusColor(book.status),
+                                    color: 'white',
+                                    border: 'none',
+                                    borderRadius: '16px',
+                                    padding: '0 8px',
+                                  }}
+                                >
+                                  {getStatusText(book.status)}
+                                </Tag>
+                              )}
                             </div>
                           )}
                           actions={[
-                            <Button key="details" type="link">
+                            <Button key="details" type="link" icon={<ArrowRightOutlined />}>
                               <Link href={`/books/${book.id}`}>Подробнее</Link>
                             </Button>
                           ]}
@@ -278,12 +391,6 @@ export default function Books({ isDarkMode, toggleTheme }: BooksProps) {
                             description={
                               <Space direction="vertical" style={{ width: '100%' }}>
                                 <Text type="secondary">{book.author}</Text>
-
-                                {book.status && (
-                                  <Text>
-                                    {getStatusIcon(book.status)} {getStatusText(book.status)}
-                                  </Text>
-                                )}
 
                                 {book.rating !== undefined && (
                                   <div>
@@ -295,7 +402,16 @@ export default function Books({ isDarkMode, toggleTheme }: BooksProps) {
                                 {book.tags && book.tags.length > 0 && (
                                   <div>
                                     {book.tags.map(tag => (
-                                      <Tag key={tag} style={{ marginBottom: 4 }}>{tag}</Tag>
+                                      <Tag
+                                        key={tag}
+                                        style={{
+                                          marginBottom: 4,
+                                          borderRadius: '16px',
+                                          padding: '0 8px',
+                                        }}
+                                      >
+                                        {tag}
+                                      </Tag>
                                     ))}
                                   </div>
                                 )}
@@ -315,7 +431,14 @@ export default function Books({ isDarkMode, toggleTheme }: BooksProps) {
 
                   {/* Пагинация */}
                   {filteredBooks.length > pageSize && (
-                    <div style={{ textAlign: 'center', marginTop: 24 }}>
+                    <div style={{
+                      textAlign: 'center',
+                      marginTop: 32,
+                      padding: '16px',
+                      background: isDarkMode ? '#1f1f1f' : '#ffffff',
+                      borderRadius: '8px',
+                      boxShadow: '0 1px 2px rgba(0, 0, 0, 0.06)'
+                    }}>
                       <Pagination
                         current={currentPage}
                         total={filteredBooks.length}

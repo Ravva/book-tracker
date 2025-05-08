@@ -1,83 +1,182 @@
 import Head from 'next/head';
 import Layout from '@/components/layout/Layout';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useState } from 'react';
+import { Typography, Form, Input, Button, Card, Upload, Tabs, Space, Switch, Divider, Spin, Empty, App } from 'antd';
+import { UserOutlined, MailOutlined, LockOutlined, UploadOutlined, SaveOutlined } from '@ant-design/icons';
+import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
+import { supabase } from '@/lib/supabase';
+import type { UploadFile } from 'antd';
 
-export default function ProfileSettings() {
+const { Title, Text, Paragraph } = Typography;
+const { TabPane } = Tabs;
+
+interface SettingsProps {
+  isDarkMode: boolean;
+  toggleTheme: () => void;
+}
+
+export default function Settings({ isDarkMode, toggleTheme }: SettingsProps) {
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // В реальном приложении данные будут загружаться из Supabase
-  const [formData, setFormData] = useState({
-    name: 'Иван Иванов',
-    email: 'ivan@example.com',
-    currentPassword: '',
-    newPassword: '',
-    confirmPassword: '',
-  });
+  const [form] = Form.useForm();
+  const [passwordForm] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+  const [avatarFile, setAvatarFile] = useState<UploadFile[]>([]);
+  const [loadingUser, setLoadingUser] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const { message } = App.useApp();
 
-  // Обработка изменений в форме
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
+  useEffect(() => {
+    async function fetchUserData() {
+      try {
+        setLoadingUser(true);
 
-  // Обработка отправки формы профиля
-  const handleProfileSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
+        // Получаем текущего пользователя
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+
+        if (!currentUser) {
+          setError('Пользователь не авторизован');
+          setLoadingUser(false);
+          return;
+        }
+
+        // Получаем профиль пользователя
+        const { data: profileData, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', currentUser.id)
+          .single();
+
+        if (profileError) {
+          console.error('Ошибка при получении профиля:', profileError);
+        }
+
+        setUser({
+          ...currentUser,
+          profile: profileData || {}
+        });
+
+        if (profileData?.avatar_url) {
+          setAvatarUrl(profileData.avatar_url);
+        }
+
+        // Заполняем форму данными пользователя
+        form.setFieldsValue({
+          email: currentUser.email,
+          username: profileData?.username || '',
+          bio: profileData?.bio || '',
+          website: profileData?.website || '',
+          notifications_enabled: profileData?.notifications_enabled || false
+        });
+
+      } catch (err) {
+        console.error('Ошибка при загрузке данных пользователя:', err);
+        setError('Не удалось загрузить данные пользователя');
+      } finally {
+        setLoadingUser(false);
+      }
+    }
+
+    fetchUserData();
+  }, [form]);
+
+  const onFinish = async (values: any) => {
     try {
-      // В реальном приложении здесь будет отправка данных в Supabase
-      console.log('Отправка данных профиля:', { name: formData.name, email: formData.email });
-      
-      // Имитация задержки запроса
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      alert('Профиль успешно обновлен');
+      setLoading(true);
+
+      if (!user) {
+        message.error('Пользователь не авторизован');
+        return;
+      }
+
+      // Обновляем профиль пользователя
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({
+          username: values.username,
+          bio: values.bio,
+          website: values.website,
+          notifications_enabled: values.notifications_enabled
+        })
+        .eq('id', user.id);
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      // Загружаем аватар, если он был изменен
+      if (avatarFile.length > 0 && avatarFile[0].originFileObj) {
+        const file = avatarFile[0].originFileObj;
+        const fileExt = file.name.split('.').pop();
+        const fileName = `${user.id}_${Date.now()}.${fileExt}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('avatars')
+          .upload(fileName, file);
+
+        if (uploadError) {
+          console.error('Ошибка при загрузке аватара:', uploadError);
+        } else {
+          // Получаем URL аватара
+          const { data: avatarData } = supabase.storage
+            .from('avatars')
+            .getPublicUrl(fileName);
+
+          // Обновляем URL аватара в профиле
+          await supabase
+            .from('profiles')
+            .update({ avatar_url: avatarData.publicUrl })
+            .eq('id', user.id);
+
+          setAvatarUrl(avatarData.publicUrl);
+        }
+      }
+
+      message.success('Профиль успешно обновлен!');
+
     } catch (error) {
       console.error('Ошибка при обновлении профиля:', error);
+      message.error('Произошла ошибка при обновлении профиля');
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
-  // Обработка отправки формы пароля
-  const handlePasswordSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (formData.newPassword !== formData.confirmPassword) {
-      alert('Новый пароль и подтверждение не совпадают');
-      return;
-    }
-    
-    setIsSubmitting(true);
-    
+  const onPasswordChange = async (values: any) => {
     try {
-      // В реальном приложении здесь будет отправка данных в Supabase
-      console.log('Отправка данных пароля');
-      
-      // Имитация задержки запроса
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Сброс полей пароля
-      setFormData(prev => ({
-        ...prev,
-        currentPassword: '',
-        newPassword: '',
-        confirmPassword: '',
-      }));
-      
-      alert('Пароль успешно обновлен');
+      setLoading(true);
+
+      const { error } = await supabase.auth.updateUser({
+        password: values.newPassword
+      });
+
+      if (error) {
+        throw error;
+      }
+
+      message.success('Пароль успешно изменен!');
+      passwordForm.resetFields();
+
     } catch (error) {
-      console.error('Ошибка при обновлении пароля:', error);
+      console.error('Ошибка при изменении пароля:', error);
+      message.error('Произошла ошибка при изменении пароля');
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
+  };
+
+  const beforeUpload = (file: File) => {
+    const isJpgOrPng = file.type === 'image/jpeg' || file.type === 'image/png';
+    if (!isJpgOrPng) {
+      message.error('Вы можете загрузить только JPG/PNG файл!');
+    }
+    const isLessThan2MB = file.size / 1024 / 1024 < 2;
+    if (!isLessThan2MB) {
+      message.error('Изображение должно быть меньше 2MB!');
+    }
+    return isJpgOrPng && isLessThan2MB;
   };
 
   return (
@@ -88,129 +187,159 @@ export default function ProfileSettings() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <Layout>
-        <div className="container mx-auto py-8 px-4">
-          <div className="flex items-center mb-6">
-            <Button variant="outline" size="sm" onClick={() => router.back()} className="mr-4">
-              Назад
-            </Button>
-            <h1 className="text-3xl font-bold">Настройки профиля</h1>
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {/* Настройки профиля */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Основная информация</CardTitle>
-                <CardDescription>Обновите свои личные данные</CardDescription>
-              </CardHeader>
-              <form onSubmit={handleProfileSubmit}>
-                <CardContent className="space-y-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="name">Имя</Label>
-                    <Input 
-                      id="name" 
-                      name="name" 
-                      value={formData.name} 
-                      onChange={handleChange} 
-                      required 
-                    />
-                  </div>
-                  
-                  <div className="grid gap-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input 
-                      id="email" 
-                      name="email" 
-                      type="email" 
-                      value={formData.email} 
-                      onChange={handleChange} 
-                      required 
-                    />
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button 
-                    type="submit" 
-                    disabled={isSubmitting}
+      <Layout isDarkMode={isDarkMode} toggleTheme={toggleTheme}>
+        <div style={{ maxWidth: 800, margin: '0 auto', padding: '24px 16px' }}>
+          <Title level={2}>Настройки профиля</Title>
+
+          {loadingUser ? (
+            <div style={{ textAlign: 'center', padding: '48px 0' }}>
+              <Spin size="large" />
+            </div>
+          ) : error ? (
+            <div style={{ textAlign: 'center', padding: '48px 0' }}>
+              <Empty
+                description={error}
+                image={Empty.PRESENTED_IMAGE_SIMPLE}
+              />
+              <Button style={{ marginTop: 16 }}>
+                <Link href="/auth/signin">Войти</Link>
+              </Button>
+            </div>
+          ) : user ? (
+            <Tabs defaultActiveKey="profile">
+              <TabPane tab="Профиль" key="profile">
+                <Card>
+                  <Form
+                    form={form}
+                    layout="vertical"
+                    onFinish={onFinish}
                   >
-                    {isSubmitting ? 'Сохранение...' : 'Сохранить изменения'}
-                  </Button>
-                </CardFooter>
-              </form>
-            </Card>
-            
-            {/* Изменение пароля */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Изменение пароля</CardTitle>
-                <CardDescription>Обновите свой пароль</CardDescription>
-              </CardHeader>
-              <form onSubmit={handlePasswordSubmit}>
-                <CardContent className="space-y-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="currentPassword">Текущий пароль</Label>
-                    <Input 
-                      id="currentPassword" 
-                      name="currentPassword" 
-                      type="password" 
-                      value={formData.currentPassword} 
-                      onChange={handleChange} 
-                      required 
-                    />
-                  </div>
-                  
-                  <div className="grid gap-2">
-                    <Label htmlFor="newPassword">Новый пароль</Label>
-                    <Input 
-                      id="newPassword" 
-                      name="newPassword" 
-                      type="password" 
-                      value={formData.newPassword} 
-                      onChange={handleChange} 
-                      required 
-                    />
-                  </div>
-                  
-                  <div className="grid gap-2">
-                    <Label htmlFor="confirmPassword">Подтверждение пароля</Label>
-                    <Input 
-                      id="confirmPassword" 
-                      name="confirmPassword" 
-                      type="password" 
-                      value={formData.confirmPassword} 
-                      onChange={handleChange} 
-                      required 
-                    />
-                  </div>
-                </CardContent>
-                <CardFooter>
-                  <Button 
-                    type="submit" 
-                    disabled={isSubmitting}
+                    <Form.Item label="Аватар">
+                      <Space align="start">
+                        {avatarUrl && (
+                          <img
+                            src={avatarUrl}
+                            alt="Аватар"
+                            style={{ width: 100, height: 100, objectFit: 'cover', borderRadius: '50%' }}
+                          />
+                        )}
+                        <Upload
+                          listType="picture"
+                          fileList={avatarFile}
+                          beforeUpload={beforeUpload}
+                          onChange={({ fileList }) => setAvatarFile(fileList)}
+                          maxCount={1}
+                          accept="image/jpeg,image/png"
+                        >
+                          <Button icon={<UploadOutlined />}>Загрузить аватар</Button>
+                        </Upload>
+                      </Space>
+                    </Form.Item>
+
+                    <Form.Item
+                      name="email"
+                      label="Email"
+                    >
+                      <Input prefix={<MailOutlined />} disabled />
+                    </Form.Item>
+
+                    <Form.Item
+                      name="username"
+                      label="Имя пользователя"
+                      rules={[{ required: true, message: 'Пожалуйста, введите имя пользователя' }]}
+                    >
+                      <Input prefix={<UserOutlined />} placeholder="Имя пользователя" />
+                    </Form.Item>
+
+                    <Form.Item
+                      name="bio"
+                      label="О себе"
+                    >
+                      <Input.TextArea rows={4} placeholder="Расскажите о себе" />
+                    </Form.Item>
+
+                    <Form.Item
+                      name="website"
+                      label="Веб-сайт"
+                    >
+                      <Input placeholder="https://example.com" />
+                    </Form.Item>
+
+                    <Form.Item
+                      name="notifications_enabled"
+                      label="Уведомления"
+                      valuePropName="checked"
+                    >
+                      <Switch />
+                    </Form.Item>
+
+                    <Form.Item>
+                      <Button type="primary" htmlType="submit" loading={loading} icon={<SaveOutlined />}>
+                        Сохранить изменения
+                      </Button>
+                    </Form.Item>
+                  </Form>
+                </Card>
+              </TabPane>
+
+              <TabPane tab="Безопасность" key="security">
+                <Card>
+                  <Title level={4}>Изменение пароля</Title>
+                  <Form
+                    form={passwordForm}
+                    layout="vertical"
+                    onFinish={onPasswordChange}
                   >
-                    {isSubmitting ? 'Обновление...' : 'Обновить пароль'}
+                    <Form.Item
+                      name="newPassword"
+                      label="Новый пароль"
+                      rules={[
+                        { required: true, message: 'Пожалуйста, введите новый пароль' },
+                        { min: 6, message: 'Пароль должен быть не менее 6 символов' }
+                      ]}
+                    >
+                      <Input.Password prefix={<LockOutlined />} placeholder="Новый пароль" />
+                    </Form.Item>
+
+                    <Form.Item
+                      name="confirmPassword"
+                      label="Подтверждение пароля"
+                      dependencies={['newPassword']}
+                      rules={[
+                        { required: true, message: 'Пожалуйста, подтвердите пароль' },
+                        ({ getFieldValue }) => ({
+                          validator(_, value) {
+                            if (!value || getFieldValue('newPassword') === value) {
+                              return Promise.resolve();
+                            }
+                            return Promise.reject(new Error('Пароли не совпадают'));
+                          },
+                        }),
+                      ]}
+                    >
+                      <Input.Password prefix={<LockOutlined />} placeholder="Подтверждение пароля" />
+                    </Form.Item>
+
+                    <Form.Item>
+                      <Button type="primary" htmlType="submit" loading={loading}>
+                        Изменить пароль
+                      </Button>
+                    </Form.Item>
+                  </Form>
+
+                  <Divider />
+
+                  <Title level={4}>Удаление аккаунта</Title>
+                  <Paragraph>
+                    Удаление аккаунта приведет к безвозвратной потере всех ваших данных.
+                  </Paragraph>
+                  <Button danger>
+                    Удалить аккаунт
                   </Button>
-                </CardFooter>
-              </form>
-            </Card>
-            
-            {/* Удаление аккаунта */}
-            <Card className="md:col-span-2">
-              <CardHeader>
-                <CardTitle>Удаление аккаунта</CardTitle>
-                <CardDescription>Удаление аккаунта приведет к потере всех данных</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground mb-4">
-                  Это действие необратимо. После удаления аккаунта все ваши данные, включая списки книг, комментарии и рейтинги, будут удалены.
-                </p>
-                <Button variant="destructive">
-                  Удалить аккаунт
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
+                </Card>
+              </TabPane>
+            </Tabs>
+          ) : null}
         </div>
       </Layout>
     </>

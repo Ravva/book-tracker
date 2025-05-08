@@ -5,9 +5,6 @@ import { SupabaseProvider } from '@/lib/context/SupabaseContext';
 import { getTheme } from '@/lib/theme';
 import ruRU from 'antd/locale/ru_RU';
 import '../styles/globals.css';
-// Импортируем стили Ant Design
-import 'antd/dist/reset.css';
-
 export default function App({ Component, pageProps }: AppProps) {
   const [mounted, setMounted] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -49,6 +46,8 @@ export default function App({ Component, pageProps }: AppProps) {
         ...getTheme(isDarkMode),
         algorithm: isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
       }}
+      // Добавляем поддержку React 19
+      warning={{ version: false }}
     >
       <AntApp>
         <SupabaseProvider>

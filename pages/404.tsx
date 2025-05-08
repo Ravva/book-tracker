@@ -1,9 +1,19 @@
 import Head from 'next/head';
 import Layout from '@/components/layout/Layout';
-import { Button } from '@/components/ui/button';
+import { Typography, Button, Result } from 'antd';
 import Link from 'next/link';
+import { useRouter } from 'next/router';
 
-export default function NotFound() {
+const { Title, Text } = Typography;
+
+interface NotFoundProps {
+  isDarkMode: boolean;
+  toggleTheme: () => void;
+}
+
+export default function NotFound({ isDarkMode, toggleTheme }: NotFoundProps) {
+  const router = useRouter();
+
   return (
     <>
       <Head>
@@ -12,16 +22,18 @@ export default function NotFound() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <Layout>
-        <div className="container mx-auto py-16 px-4 text-center">
-          <h1 className="text-6xl font-bold mb-4">404</h1>
-          <h2 className="text-2xl font-medium mb-6">Страница не найдена</h2>
-          <p className="text-muted-foreground mb-8 max-w-md mx-auto">
-            Извините, но страница, которую вы ищете, не существует или была перемещена.
-          </p>
-          <Button asChild>
-            <Link href="/">Вернуться на главную</Link>
-          </Button>
+      <Layout isDarkMode={isDarkMode} toggleTheme={toggleTheme}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '48px 16px', textAlign: 'center' }}>
+          <Result
+            status="404"
+            title="404"
+            subTitle="Извините, страница, которую вы посетили, не существует."
+            extra={
+              <Button type="primary">
+                <Link href="/">Вернуться на главную</Link>
+              </Button>
+            }
+          />
         </div>
       </Layout>
     </>

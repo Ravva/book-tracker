@@ -1,53 +1,86 @@
 import Head from 'next/head';
 import Layout from '@/components/layout/Layout';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
+import { Typography, Form, Input, Button, Card, Select, Switch, App } from 'antd';
+import { PlusOutlined, BookOutlined } from '@ant-design/icons';
+import Link from 'next/link';
 import { useState } from 'react';
 import { useRouter } from 'next/router';
+import { supabase } from '@/lib/supabase';
 
-export default function CreateList() {
+const { Title, Text, Paragraph } = Typography;
+const { TextArea } = Input;
+const { Option } = Select;
+
+interface CreateListProps {
+  isDarkMode: boolean;
+  toggleTheme: () => void;
+}
+
+export default function CreateList({ isDarkMode, toggleTheme }: CreateListProps) {
   const router = useRouter();
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // Состояние формы
-  const [formData, setFormData] = useState({
-    name: '',
-    description: '',
-    isPublic: true,
-  });
+  const [form] = Form.useForm();
+  const [loading, setLoading] = useState(false);
+  const { message } = App.useApp();
 
-  // Обработка изменений в форме
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  // Обработка изменения чекбокса
-  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, checked } = e.target;
-    setFormData(prev => ({ ...prev, [name]: checked }));
-  };
-
-  // Обработка отправки формы
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    
+  const onFinish = async (values: any) => {
     try {
-      // В реальном приложении здесь будет отправка данных в Supabase
-      console.log('Отправка данных:', formData);
-      
-      // Имитация задержки запроса
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Перенаправление на страницу списков
-      router.push('/lists');
+      setLoading(true);
+
+      // Получаем текущего пользователя
+      const { data: { user } } = await supabase.auth.getUser();
+
+      if (!user) {
+        message.error('Пользователь не авторизован');
+        return;
+      }
+
+      // Создаем список
+      const { data: listData, error: listError } = await supabase
+        .from('book_lists')
+        .insert([
+          {
+            title: values.title,
+            description: values.description,
+            is_public: values.is_public,
+            user_id: user.id
+          }
+        ])
+        .select();
+
+      if (listError) {
+        throw listError;
+      }
+
+      const listId = listData?.[0]?.id;
+
+      if (!listId) {
+        throw new Error('Не удалось получить ID созданного списка');
+      }
+
+      // Добавляем книги в список, если они были выбраны
+      if (values.books && values.books.length > 0) {
+        const bookItems = values.books.map((bookId: number) => ({
+          book_id: bookId,
+          list_id: listId
+        }));
+
+        const { error: booksError } = await supabase
+          .from('book_list_items')
+          .insert(bookItems);
+
+        if (booksError) {
+          console.error('Ошибка при добавлении книг в список:', booksError);
+        }
+      }
+
+      message.success('Список успешно создан!');
+      router.push(`/lists/${listId}`);
+
     } catch (error) {
       console.error('Ошибка при создании списка:', error);
+      message.error('Произошла ошибка при создании списка');
     } finally {
-      setIsSubmitting(false);
+      setLoading(false);
     }
   };
 
@@ -59,73 +92,65 @@ export default function CreateList() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <Layout>
-        <div className="container mx-auto py-8 px-4">
-          <div className="flex items-center mb-6">
-            <Button variant="outline" size="sm" onClick={() => router.back()} className="mr-4">
-              Назад
-            </Button>
-            <h1 className="text-3xl font-bold">Создание списка книг</h1>
-          </div>
-          
-          <Card className="max-w-2xl mx-auto">
-            <CardHeader>
-              <CardTitle>Новый список</CardTitle>
-              <CardDescription>Создайте новый список для организации ваших книг</CardDescription>
-            </CardHeader>
-            <form onSubmit={handleSubmit}>
-              <CardContent className="space-y-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="name">Название списка *</Label>
-                  <Input 
-                    id="name" 
-                    name="name" 
-                    value={formData.name} 
-                    onChange={handleChange} 
-                    required 
-                  />
-                </div>
-                
-                <div className="grid gap-2">
-                  <Label htmlFor="description">Описание</Label>
-                  <textarea 
-                    id="description" 
-                    name="description" 
-                    value={formData.description} 
-                    onChange={handleChange} 
-                    className="min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
-                  />
-                </div>
-                
-                <div className="flex items-center space-x-2">
-                  <input 
-                    type="checkbox" 
-                    id="isPublic" 
-                    name="isPublic" 
-                    checked={formData.isPublic} 
-                    onChange={handleCheckboxChange} 
-                    className="rounded border-input h-4 w-4"
-                  />
-                  <Label htmlFor="isPublic">Публичный список (виден всем пользователям)</Label>
-                </div>
-              </CardContent>
-              
-              <CardFooter className="flex justify-between">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => router.back()}
+      <Layout isDarkMode={isDarkMode} toggleTheme={toggleTheme}>
+        <div style={{ maxWidth: 800, margin: '0 auto', padding: '24px 16px' }}>
+          <Card>
+            <Title level={2}>Создание списка книг</Title>
+
+            <Form
+              form={form}
+              layout="vertical"
+              onFinish={onFinish}
+              initialValues={{
+                is_public: true
+              }}
+            >
+              <Form.Item
+                name="title"
+                label="Название списка"
+                rules={[{ required: true, message: 'Пожалуйста, введите название списка' }]}
+              >
+                <Input placeholder="Введите название списка" />
+              </Form.Item>
+
+              <Form.Item
+                name="description"
+                label="Описание"
+              >
+                <TextArea rows={4} placeholder="Введите описание списка" />
+              </Form.Item>
+
+              <Form.Item
+                name="books"
+                label="Книги"
+              >
+                <Select
+                  mode="multiple"
+                  placeholder="Выберите книги для добавления в список"
+                  style={{ width: '100%' }}
+                  loading={loading}
                 >
-                  Отмена
+                  {/* Здесь будут опции с книгами из базы данных */}
+                </Select>
+              </Form.Item>
+
+              <Form.Item
+                name="is_public"
+                label="Публичный список"
+                valuePropName="checked"
+              >
+                <Switch />
+              </Form.Item>
+
+              <Form.Item>
+                <Button type="primary" htmlType="submit" loading={loading} icon={<PlusOutlined />}>
+                  Создать список
                 </Button>
-                <Button 
-                  type="submit" 
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? 'Создание...' : 'Создать список'}
+                <Button style={{ marginLeft: 8 }}>
+                  <Link href="/lists">Отмена</Link>
                 </Button>
-              </CardFooter>
-            </form>
+              </Form.Item>
+            </Form>
           </Card>
         </div>
       </Layout>

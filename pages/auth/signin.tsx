@@ -1,85 +1,157 @@
 import Head from 'next/head';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import Layout from '@/components/layout/Layout';
+import { Typography, Form, Input, Button, Card, Divider, Space, App } from 'antd';
+import { UserOutlined, LockOutlined, GithubOutlined, GoogleOutlined } from '@ant-design/icons';
+import Link from 'next/link';
+import { useState } from 'react';
+import { useRouter } from 'next/router';
+import { supabase } from '@/lib/supabase';
 
-export default function SignIn() {
+const { Title, Text, Paragraph } = Typography;
+
+interface SignInProps {
+  isDarkMode: boolean;
+  toggleTheme: () => void;
+}
+
+export default function SignIn({ isDarkMode, toggleTheme }: SignInProps) {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const { message } = App.useApp();
+
+  const onFinish = async (values: { email: string; password: string }) => {
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.signInWithPassword({
+        email: values.email,
+        password: values.password,
+      });
+
+      if (error) {
+        message.error(error.message);
+        return;
+      }
+
+      message.success('Вход выполнен успешно!');
+      router.push('/');
+    } catch (error) {
+      console.error('Ошибка при входе:', error);
+      message.error('Произошла ошибка при входе');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const signInWithGithub = async () => {
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'github',
+      });
+
+      if (error) {
+        message.error(error.message);
+      }
+    } catch (error) {
+      console.error('Ошибка при входе через GitHub:', error);
+      message.error('Произошла ошибка при входе через GitHub');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const signInWithGoogle = async () => {
+    try {
+      setLoading(true);
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+      });
+
+      if (error) {
+        message.error(error.message);
+      }
+    } catch (error) {
+      console.error('Ошибка при входе через Google:', error);
+      message.error('Произошла ошибка при входе через Google');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <>
       <Head>
         <title>Вход | Трекер прочитанных книг</title>
-        <meta name="description" content="Вход в трекер прочитанных книг" />
+        <meta name="description" content="Вход в аккаунт трекера прочитанных книг" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <Layout>
-        <div className="container mx-auto py-8 px-4 flex justify-center">
-          <Card className="w-full max-w-md">
-            <CardHeader>
-              <CardTitle>Вход в аккаунт</CardTitle>
-              <CardDescription>Введите данные для входа или используйте социальные сети</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form>
-                <div className="grid gap-4">
-                  <div className="grid gap-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" placeholder="example@example.com" />
-                  </div>
-                  <div className="grid gap-2">
-                    <div className="flex items-center justify-between">
-                      <Label htmlFor="password">Пароль</Label>
-                      <Link href="/auth/forgot-password" className="text-sm text-primary hover:underline">
-                        Забыли пароль?
-                      </Link>
-                    </div>
-                    <Input id="password" type="password" />
-                  </div>
-                  <Button type="submit" className="w-full">
-                    Войти
-                  </Button>
-                </div>
-              </form>
+      <Layout isDarkMode={isDarkMode} toggleTheme={toggleTheme}>
+        <div style={{ maxWidth: 400, margin: '48px auto', padding: '0 16px' }}>
+          <Card>
+            <Title level={2} style={{ textAlign: 'center', marginBottom: 24 }}>
+              Вход в аккаунт
+            </Title>
 
-              <div className="relative my-6">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-input"></div>
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">или</span>
-                </div>
-              </div>
+            <Form
+              name="signin"
+              initialValues={{ remember: true }}
+              onFinish={onFinish}
+              layout="vertical"
+            >
+              <Form.Item
+                name="email"
+                label="Email"
+                rules={[
+                  { required: true, message: 'Пожалуйста, введите email' },
+                  { type: 'email', message: 'Пожалуйста, введите корректный email' }
+                ]}
+              >
+                <Input prefix={<UserOutlined />} placeholder="Email" />
+              </Form.Item>
 
-              <div className="grid gap-2">
-                <Button variant="outline" className="w-full">
-                  <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-                    <path
-                      d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"
-                    />
-                  </svg>
-                  Войти через GitHub
+              <Form.Item
+                name="password"
+                label="Пароль"
+                rules={[{ required: true, message: 'Пожалуйста, введите пароль' }]}
+              >
+                <Input.Password prefix={<LockOutlined />} placeholder="Пароль" />
+              </Form.Item>
+
+              <Form.Item>
+                <Button type="primary" htmlType="submit" loading={loading} block>
+                  Войти
                 </Button>
-                <Button variant="outline" className="w-full">
-                  <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
-                    <path
-                      d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z"
-                    />
-                  </svg>
-                  Войти через Google
-                </Button>
-              </div>
-            </CardContent>
-            <CardFooter className="flex justify-center">
-              <div className="text-sm text-muted-foreground">
-                Нет аккаунта?{' '}
-                <Link href="/auth/signup" className="text-primary hover:underline">
-                  Зарегистрироваться
-                </Link>
-              </div>
-            </CardFooter>
+              </Form.Item>
+            </Form>
+
+            <Divider>или</Divider>
+
+            <Space direction="vertical" style={{ width: '100%' }}>
+              <Button
+                icon={<GithubOutlined />}
+                onClick={signInWithGithub}
+                loading={loading}
+                block
+              >
+                Войти через GitHub
+              </Button>
+              <Button
+                icon={<GoogleOutlined />}
+                onClick={signInWithGoogle}
+                loading={loading}
+                block
+              >
+                Войти через Google
+              </Button>
+            </Space>
+
+            <Paragraph style={{ marginTop: 24, textAlign: 'center' }}>
+              <Text>Еще нет аккаунта? </Text>
+              <Link href="/auth/signup">
+                <Text type="primary">Зарегистрироваться</Text>
+              </Link>
+            </Paragraph>
           </Card>
         </div>
       </Layout>
