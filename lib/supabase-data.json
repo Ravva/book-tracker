@@ -1,0 +1,412 @@
+{
+  "books": [
+    {
+      "id": "31c0ebd3-5c52-4c9b-9377-0a6f6524827e",
+      "user_id": "9b5c0f91-f868-4435-b28d-b4ca04427a3d",
+      "title": "Тревожные люди",
+      "author": "Фредрик Бакман",
+      "description": "Комедия с элементами драмы о неудавшемся ограблении банка, которое превращается в захват заложников на просмотре квартиры. История о том, как случайные люди могут повлиять на жизнь друг друга.",
+      "cover_image_url": "https://twcykrzvftmydvcqsuil.supabase.co/storage/v1/object/public/book-covers/trevozhnye-lyudi.jpg",
+      "file_url": null,
+      "download_count": 0,
+      "view_count": 0,
+      "like_count": 0,
+      "status": "read",
+      "rating": 9,
+      "created_at": "2025-05-08T06:51:40.716469+00:00",
+      "updated_at": "2025-05-08T06:51:40.716469+00:00"
+    },
+    {
+      "id": "03a8e32b-c305-4368-905c-c80257d0b4fd",
+      "user_id": "9b5c0f91-f868-4435-b28d-b4ca04427a3d",
+      "title": "Маленькая жизнь",
+      "author": "Ханья Янагихара",
+      "description": "Эпический роман о дружбе четырех однокурсников в Нью-Йорке, который превращается в историю о травме, человеческой жестокости и стойкости.",
+      "cover_image_url": "https://twcykrzvftmydvcqsuil.supabase.co/storage/v1/object/public/book-covers/malenkaya-zhizn.jpg",
+      "file_url": null,
+      "download_count": 0,
+      "view_count": 0,
+      "like_count": 0,
+      "status": "read",
+      "rating": 10,
+      "created_at": "2025-05-08T06:51:40.716469+00:00",
+      "updated_at": "2025-05-08T06:51:40.716469+00:00"
+    },
+    {
+      "id": "8f4387bc-c2e3-4a75-b453-fd5baa158030",
+      "user_id": "9b5c0f91-f868-4435-b28d-b4ca04427a3d",
+      "title": "Задача трех тел",
+      "author": "Лю Цысинь",
+      "description": "Научно-фантастический роман, первая часть трилогии \"Память о прошлом Земли\". История о контакте человечества с инопланетной цивилизацией на фоне Культурной революции в Китае.",
+      "cover_image_url": "https://twcykrzvftmydvcqsuil.supabase.co/storage/v1/object/public/book-covers/zadacha-treh-tel.jpg",
+      "file_url": null,
+      "download_count": 0,
+      "view_count": 0,
+      "like_count": 0,
+      "status": "reading",
+      "rating": 8,
+      "created_at": "2025-05-08T06:51:40.716469+00:00",
+      "updated_at": "2025-05-08T06:51:40.716469+00:00"
+    },
+    {
+      "id": "1960f4a8-1dac-4573-b8f5-fd0db0000af1",
+      "user_id": "9b5c0f91-f868-4435-b28d-b4ca04427a3d",
+      "title": "Атомные привычки",
+      "author": "Джеймс Клир",
+      "description": "Практическое руководство по формированию полезных привычек и избавлению от вредных. Автор предлагает систему небольших изменений, которые приводят к значительным результатам.",
+      "cover_image_url": "https://twcykrzvftmydvcqsuil.supabase.co/storage/v1/object/public/book-covers/atomnye-privychki.jpg",
+      "file_url": null,
+      "download_count": 0,
+      "view_count": 0,
+      "like_count": 0,
+      "status": "read",
+      "rating": 9,
+      "created_at": "2025-05-08T06:51:40.716469+00:00",
+      "updated_at": "2025-05-08T06:51:40.716469+00:00"
+    },
+    {
+      "id": "37e82f23-8747-4ebf-8491-6c5451c72965",
+      "user_id": "9b5c0f91-f868-4435-b28d-b4ca04427a3d",
+      "title": "Мастер и Маргарита",
+      "author": "Михаил Булгаков",
+      "description": "Культовый роман о визите дьявола в атеистическую Москву 1930-х годов, переплетающий сатиру на советское общество с историей Понтия Пилата и Иешуа Га-Ноцри.",
+      "cover_image_url": "https://twcykrzvftmydvcqsuil.supabase.co/storage/v1/object/public/book-covers/master-i-margarita.jpg",
+      "file_url": null,
+      "download_count": 0,
+      "view_count": 0,
+      "like_count": 0,
+      "status": "read",
+      "rating": 10,
+      "created_at": "2025-05-08T06:51:40.716469+00:00",
+      "updated_at": "2025-05-08T06:51:40.716469+00:00"
+    },
+    {
+      "id": "6b34632a-3b28-4c06-af1f-b8a497bc8dc6",
+      "user_id": "9b5c0f91-f868-4435-b28d-b4ca04427a3d",
+      "title": "Sapiens. Краткая история человечества",
+      "author": "Юваль Ной Харари",
+      "description": "Бестселлер о истории человечества от появления Homo sapiens до наших дней. Харари рассматривает ключевые революции, изменившие ход истории: когнитивную, аграрную и научную.",
+      "cover_image_url": "https://twcykrzvftmydvcqsuil.supabase.co/storage/v1/object/public/book-covers/sapiens.jpg",
+      "file_url": null,
+      "download_count": 0,
+      "view_count": 0,
+      "like_count": 0,
+      "status": "want_to_read",
+      "rating": null,
+      "created_at": "2025-05-08T06:51:40.716469+00:00",
+      "updated_at": "2025-05-08T06:51:40.716469+00:00"
+    },
+    {
+      "id": "ec3b072c-d9af-40b0-8b9c-0c2cec056c0a",
+      "user_id": "9b5c0f91-f868-4435-b28d-b4ca04427a3d",
+      "title": "Убийство командора",
+      "author": "Харуки Мураками",
+      "description": "Роман о художнике, который после развода переезжает в дом известного художника в горах. Там он находит загадочную картину \"Убийство командора\", которая запускает цепь странных событий.",
+      "cover_image_url": "https://twcykrzvftmydvcqsuil.supabase.co/storage/v1/object/public/book-covers/ubiystvo-komandora.jpg",
+      "file_url": null,
+      "download_count": 0,
+      "view_count": 0,
+      "like_count": 0,
+      "status": "reading",
+      "rating": null,
+      "created_at": "2025-05-08T06:51:40.716469+00:00",
+      "updated_at": "2025-05-08T06:51:40.716469+00:00"
+    },
+    {
+      "id": "9b05d3a4-0391-45b3-9232-8ab9ad7fea54",
+      "user_id": "9b5c0f91-f868-4435-b28d-b4ca04427a3d",
+      "title": "Думай медленно... решай быстро",
+      "author": "Даниэль Канеман",
+      "description": "Книга нобелевского лауреата по экономике о двух системах мышления: быстрой, интуитивной и эмоциональной; и медленной, более логичной. Канеман объясняет, как эти системы формируют наши суждения и решения.",
+      "cover_image_url": "https://twcykrzvftmydvcqsuil.supabase.co/storage/v1/object/public/book-covers/dumay-medlenno.jpg",
+      "file_url": null,
+      "download_count": 0,
+      "view_count": 0,
+      "like_count": 0,
+      "status": "read",
+      "rating": 9,
+      "created_at": "2025-05-08T06:51:40.716469+00:00",
+      "updated_at": "2025-05-08T06:51:40.716469+00:00"
+    },
+    {
+      "id": "5070fe2b-8ba0-4db3-bc39-fcb1b6c18088",
+      "user_id": "9b5c0f91-f868-4435-b28d-b4ca04427a3d",
+      "title": "Преступление и наказание",
+      "author": "Федор Достоевский",
+      "description": "Классический роман о бедном студенте Родионе Раскольникове, который решается на убийство старухи-процентщицы, чтобы проверить свою теорию о \"право имеющих\" людях.",
+      "cover_image_url": "https://twcykrzvftmydvcqsuil.supabase.co/storage/v1/object/public/book-covers/prestuplenie-i-nakazanie.jpg",
+      "file_url": null,
+      "download_count": 0,
+      "view_count": 0,
+      "like_count": 0,
+      "status": "read",
+      "rating": 10,
+      "created_at": "2025-05-08T06:51:40.716469+00:00",
+      "updated_at": "2025-05-08T06:51:40.716469+00:00"
+    },
+    {
+      "id": "278b08c2-45d9-4764-aff9-fc1937d67d2f",
+      "user_id": "9b5c0f91-f868-4435-b28d-b4ca04427a3d",
+      "title": "Цветы для Элджернона",
+      "author": "Дэниел Киз",
+      "description": "Научно-фантастическая повесть о умственно отсталом мужчине, который становится гением после экспериментальной операции. История рассказывается через его дневниковые записи.",
+      "cover_image_url": "https://twcykrzvftmydvcqsuil.supabase.co/storage/v1/object/public/book-covers/tsvety-dlya-eldzherona.jpg",
+      "file_url": null,
+      "download_count": 0,
+      "view_count": 0,
+      "like_count": 0,
+      "status": "want_to_read",
+      "rating": null,
+      "created_at": "2025-05-08T06:51:40.716469+00:00",
+      "updated_at": "2025-05-08T06:51:40.716469+00:00"
+    }
+  ],
+  "tags": [
+    {
+      "id": "8db08589-9982-47e8-a50b-90545ac8074a",
+      "name": "Фантастика",
+      "created_at": "2025-05-08T06:51:40.540835+00:00"
+    },
+    {
+      "id": "e3918f62-46f0-4dab-b78f-83f633f4321e",
+      "name": "Роман",
+      "created_at": "2025-05-08T06:51:40.540835+00:00"
+    },
+    {
+      "id": "bb7180ee-e4db-49cd-9a21-96eeeb71a40d",
+      "name": "Детектив",
+      "created_at": "2025-05-08T06:51:40.540835+00:00"
+    },
+    {
+      "id": "c6ee1de9-22a7-481a-a04d-5a6d71227cec",
+      "name": "Психология",
+      "created_at": "2025-05-08T06:51:40.540835+00:00"
+    },
+    {
+      "id": "da0724a4-a5b8-4247-8bc3-8d43eb9a7d86",
+      "name": "Бизнес",
+      "created_at": "2025-05-08T06:51:40.540835+00:00"
+    },
+    {
+      "id": "dea4f10b-4a15-4d9a-9ddd-c52ce7e0d7be",
+      "name": "Саморазвитие",
+      "created_at": "2025-05-08T06:51:40.540835+00:00"
+    },
+    {
+      "id": "3b3c7a2e-9dfc-4c63-a16f-caf0a6798c03",
+      "name": "Классика",
+      "created_at": "2025-05-08T06:51:40.540835+00:00"
+    },
+    {
+      "id": "331afe2e-7e50-40ca-86c3-3b36eb952da7",
+      "name": "Современная проза",
+      "created_at": "2025-05-08T06:51:40.540835+00:00"
+    },
+    {
+      "id": "5f424c4f-9ebf-4129-8c91-af3a8bdf01e3",
+      "name": "Научпоп",
+      "created_at": "2025-05-08T06:51:40.540835+00:00"
+    },
+    {
+      "id": "bbb8ebc6-768c-4429-841f-76a18eef4f56",
+      "name": "Философия",
+      "created_at": "2025-05-08T06:51:40.540835+00:00"
+    }
+  ],
+  "book_tags": [
+    {
+      "id": "169d9313-7d04-46d7-8237-520aec2f97d1",
+      "book_id": "31c0ebd3-5c52-4c9b-9377-0a6f6524827e",
+      "tag_id": "331afe2e-7e50-40ca-86c3-3b36eb952da7"
+    },
+    {
+      "id": "fa19bb05-9381-4444-b4d2-416a27a33cc9",
+      "book_id": "31c0ebd3-5c52-4c9b-9377-0a6f6524827e",
+      "tag_id": "c6ee1de9-22a7-481a-a04d-5a6d71227cec"
+    },
+    {
+      "id": "8b247dbe-8ca9-4216-adc7-43e5d452e66a",
+      "book_id": "03a8e32b-c305-4368-905c-c80257d0b4fd",
+      "tag_id": "331afe2e-7e50-40ca-86c3-3b36eb952da7"
+    },
+    {
+      "id": "242c22f6-ae8e-4127-b342-8aee2aed8cca",
+      "book_id": "03a8e32b-c305-4368-905c-c80257d0b4fd",
+      "tag_id": "e3918f62-46f0-4dab-b78f-83f633f4321e"
+    },
+    {
+      "id": "66fc2d7d-2d59-447a-bc31-1fa2e5c97b27",
+      "book_id": "03a8e32b-c305-4368-905c-c80257d0b4fd",
+      "tag_id": "c6ee1de9-22a7-481a-a04d-5a6d71227cec"
+    },
+    {
+      "id": "983dc052-6a27-478f-a2ee-1ced2847b4d4",
+      "book_id": "8f4387bc-c2e3-4a75-b453-fd5baa158030",
+      "tag_id": "8db08589-9982-47e8-a50b-90545ac8074a"
+    },
+    {
+      "id": "184d5260-9e19-41f4-91c9-0ecca67ded86",
+      "book_id": "8f4387bc-c2e3-4a75-b453-fd5baa158030",
+      "tag_id": "5f424c4f-9ebf-4129-8c91-af3a8bdf01e3"
+    },
+    {
+      "id": "358b143a-048f-477a-99b9-ccac03439637",
+      "book_id": "1960f4a8-1dac-4573-b8f5-fd0db0000af1",
+      "tag_id": "dea4f10b-4a15-4d9a-9ddd-c52ce7e0d7be"
+    },
+    {
+      "id": "155d6209-da08-4031-9001-b974f3cde8a8",
+      "book_id": "1960f4a8-1dac-4573-b8f5-fd0db0000af1",
+      "tag_id": "c6ee1de9-22a7-481a-a04d-5a6d71227cec"
+    },
+    {
+      "id": "65ead51c-3225-4691-ab59-1da78428dc27",
+      "book_id": "37e82f23-8747-4ebf-8491-6c5451c72965",
+      "tag_id": "3b3c7a2e-9dfc-4c63-a16f-caf0a6798c03"
+    },
+    {
+      "id": "045c756d-8964-4da5-a8d0-954ff771a101",
+      "book_id": "37e82f23-8747-4ebf-8491-6c5451c72965",
+      "tag_id": "8db08589-9982-47e8-a50b-90545ac8074a"
+    },
+    {
+      "id": "d651292c-bfd9-4c32-a91f-99e11c84f28a",
+      "book_id": "37e82f23-8747-4ebf-8491-6c5451c72965",
+      "tag_id": "bbb8ebc6-768c-4429-841f-76a18eef4f56"
+    },
+    {
+      "id": "7b4ffa8d-8403-4053-93ce-b158cbbbb7bd",
+      "book_id": "6b34632a-3b28-4c06-af1f-b8a497bc8dc6",
+      "tag_id": "5f424c4f-9ebf-4129-8c91-af3a8bdf01e3"
+    },
+    {
+      "id": "a67ba8b8-e3db-4ab8-9ba4-e9cfd24ebf84",
+      "book_id": "6b34632a-3b28-4c06-af1f-b8a497bc8dc6",
+      "tag_id": "bbb8ebc6-768c-4429-841f-76a18eef4f56"
+    },
+    {
+      "id": "3dd321ac-f41a-4fa8-82da-deaa9f43e283",
+      "book_id": "ec3b072c-d9af-40b0-8b9c-0c2cec056c0a",
+      "tag_id": "331afe2e-7e50-40ca-86c3-3b36eb952da7"
+    },
+    {
+      "id": "9626783a-2a46-4109-b716-d6bcff703535",
+      "book_id": "ec3b072c-d9af-40b0-8b9c-0c2cec056c0a",
+      "tag_id": "8db08589-9982-47e8-a50b-90545ac8074a"
+    },
+    {
+      "id": "d2dd7dd8-fab5-46cd-9bef-ef2418f8e3ab",
+      "book_id": "9b05d3a4-0391-45b3-9232-8ab9ad7fea54",
+      "tag_id": "c6ee1de9-22a7-481a-a04d-5a6d71227cec"
+    },
+    {
+      "id": "21fc1044-6fb6-409b-9b19-f1e120302d01",
+      "book_id": "9b05d3a4-0391-45b3-9232-8ab9ad7fea54",
+      "tag_id": "5f424c4f-9ebf-4129-8c91-af3a8bdf01e3"
+    },
+    {
+      "id": "9b3371fa-00ef-48c5-aeef-3cdec1a12a85",
+      "book_id": "5070fe2b-8ba0-4db3-bc39-fcb1b6c18088",
+      "tag_id": "3b3c7a2e-9dfc-4c63-a16f-caf0a6798c03"
+    },
+    {
+      "id": "5d6c6fef-0633-449c-a8bf-2ac9528f12ff",
+      "book_id": "5070fe2b-8ba0-4db3-bc39-fcb1b6c18088",
+      "tag_id": "e3918f62-46f0-4dab-b78f-83f633f4321e"
+    },
+    {
+      "id": "cb2490e9-7c60-4e61-b9b1-3153e32f54a4",
+      "book_id": "5070fe2b-8ba0-4db3-bc39-fcb1b6c18088",
+      "tag_id": "bb7180ee-e4db-49cd-9a21-96eeeb71a40d"
+    },
+    {
+      "id": "cfa839ef-d43b-4c8f-848d-4afaf613939c",
+      "book_id": "278b08c2-45d9-4764-aff9-fc1937d67d2f",
+      "tag_id": "8db08589-9982-47e8-a50b-90545ac8074a"
+    },
+    {
+      "id": "3ad456e0-8fde-4711-8ebb-91a32551fb24",
+      "book_id": "278b08c2-45d9-4764-aff9-fc1937d67d2f",
+      "tag_id": "c6ee1de9-22a7-481a-a04d-5a6d71227cec"
+    }
+  ],
+  "comments": [
+    {
+      "id": "d6c235c5-e2ba-4885-82e7-b11c911d8922",
+      "book_id": "31c0ebd3-5c52-4c9b-9377-0a6f6524827e",
+      "user_id": "9b5c0f91-f868-4435-b28d-b4ca04427a3d",
+      "content": "Отличная книга! Бакман как всегда создает удивительных персонажей.",
+      "created_at": "2025-05-08T06:51:41.055816+00:00",
+      "updated_at": "2025-05-08T06:51:41.055816+00:00"
+    },
+    {
+      "id": "42f78090-2452-46b9-be26-7bffb3770e2d",
+      "book_id": "03a8e32b-c305-4368-905c-c80257d0b4fd",
+      "user_id": "9b5c0f91-f868-4435-b28d-b4ca04427a3d",
+      "content": "Очень тяжелая, но невероятно глубокая книга. Не могла оторваться.",
+      "created_at": "2025-05-08T06:51:41.055816+00:00",
+      "updated_at": "2025-05-08T06:51:41.055816+00:00"
+    },
+    {
+      "id": "6aaaa6ae-eb4f-4fa4-8d61-cfd0012ce0b1",
+      "book_id": "8f4387bc-c2e3-4a75-b453-fd5baa158030",
+      "user_id": "9b5c0f91-f868-4435-b28d-b4ca04427a3d",
+      "content": "Интересный взгляд на возможный контакт с инопланетной цивилизацией. Жду, когда смогу прочитать продолжение.",
+      "created_at": "2025-05-08T06:51:41.055816+00:00",
+      "updated_at": "2025-05-08T06:51:41.055816+00:00"
+    },
+    {
+      "id": "fe0470d0-c4fd-4998-8b91-97171534410a",
+      "book_id": "1960f4a8-1dac-4573-b8f5-fd0db0000af1",
+      "user_id": "9b5c0f91-f868-4435-b28d-b4ca04427a3d",
+      "content": "Практичные советы, которые действительно работают. Рекомендую всем, кто хочет изменить свои привычки.",
+      "created_at": "2025-05-08T06:51:41.055816+00:00",
+      "updated_at": "2025-05-08T06:51:41.055816+00:00"
+    },
+    {
+      "id": "7282d415-d489-48d6-9b78-77a2cc7903ed",
+      "book_id": "37e82f23-8747-4ebf-8491-6c5451c72965",
+      "user_id": "9b5c0f91-f868-4435-b28d-b4ca04427a3d",
+      "content": "Перечитываю уже третий раз и каждый раз нахожу что-то новое. Гениальное произведение!",
+      "created_at": "2025-05-08T06:51:41.055816+00:00",
+      "updated_at": "2025-05-08T06:51:41.055816+00:00"
+    }
+  ],
+  "storage": {
+    "buckets": [
+      {
+        "id": "book-covers",
+        "name": "book-covers",
+        "owner": "",
+        "public": true,
+        "file_size_limit": null,
+        "allowed_mime_types": null,
+        "created_at": "2025-05-01T17:05:39.876Z",
+        "updated_at": "2025-05-01T17:05:39.876Z"
+      },
+      {
+        "id": "avatars",
+        "name": "avatars",
+        "owner": "",
+        "public": true,
+        "file_size_limit": null,
+        "allowed_mime_types": null,
+        "created_at": "2025-05-01T17:05:53.653Z",
+        "updated_at": "2025-05-01T17:05:53.653Z"
+      },
+      {
+        "id": "book-files",
+        "name": "book-files",
+        "owner": "",
+        "public": false,
+        "file_size_limit": null,
+        "allowed_mime_types": null,
+        "created_at": "2025-05-01T17:06:06.260Z",
+        "updated_at": "2025-05-01T17:06:06.260Z"
+      }
+    ],
+    "book-covers": [],
+    "avatars": [],
+    "book-files": []
+  }
+}

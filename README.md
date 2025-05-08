@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Трекер прочитанных книг
 
-## Getting Started
+Веб-приложение для отслеживания прочитанных книг, создания списков чтения и обмена рекомендациями.
 
-First, run the development server:
+## Технологии
+
+- **Frontend**: Next.js, TypeScript, Tailwind CSS, shadcn/ui
+- **Backend**: Supabase (PostgreSQL, Auth, Storage)
+- **Деплой**: Vercel
+
+## Начало работы
+
+1. Клонируйте репозиторий:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/Ravva/book-tracker.git
+cd book-tracker
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Установите зависимости:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+pnpm install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+3. Создайте файл `.env.local` на основе `.env.example` и заполните его своими данными Supabase:
 
-## Learn More
+```bash
+cp .env.example .env.local
+```
 
-To learn more about Next.js, take a look at the following resources:
+4. Запустите сервер разработки:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+pnpm dev
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+5. Откройте [http://localhost:3000](http://localhost:3000) в браузере.
 
-## Deploy on Vercel
+## Работа с Supabase
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Получение схемы базы данных
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Для получения актуальной схемы базы данных из Supabase и генерации TypeScript типов:
+
+1. Убедитесь, что в файле `.env.local` указаны правильные значения:
+   - `NEXT_PUBLIC_SUPABASE_URL`
+   - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+
+2. Запустите скрипт:
+
+```bash
+pnpm fetch-schema
+```
+
+Скрипт создаст два файла:
+- `lib/supabase-schema.json` - JSON-представление схемы базы данных
+- `lib/supabase-types.ts` - TypeScript типы на основе схемы
+
+### Структура базы данных
+
+База данных содержит следующие таблицы:
+
+- `books` - информация о книгах
+- `user_books` - связь пользователей с книгами (статус, рейтинг)
+- `tags` - теги для категоризации книг
+- `book_tags` - связь книг с тегами
+- `lists` - списки книг
+- `list_books` - связь списков с книгами
+- `comments` - комментарии к книгам
+- `achievements` - достижения
+- `user_achievements` - связь пользователей с достижениями
+
+## Функциональность
+
+- Регистрация и авторизация через OAuth (GitHub, Google)
+- Добавление книг в личную библиотеку
+- Загрузка и скачивание файлов книг (fb2/zip до 20 Мб)
+- Отслеживание прогресса чтения
+- Оценка книг по 10-балльной шкале
+- Создание и публикация списков книг
+- Система тегов для категоризации
+- Статистика чтения
+- Система достижений
