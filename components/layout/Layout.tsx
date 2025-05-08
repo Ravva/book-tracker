@@ -1,56 +1,80 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 import Link from 'next/link';
-import { Button } from '@/components/ui/button';
+import { Layout as AntLayout, Menu, Button, Space, Typography } from 'antd';
 import ThemeToggle from './ThemeToggle';
+
+const { Header, Content, Footer } = AntLayout;
+const { Title, Text } = Typography;
 
 interface LayoutProps {
   children: React.ReactNode;
+  isDarkMode: boolean;
+  toggleTheme: () => void;
 }
 
-export default function Layout({ children }: LayoutProps) {
+export default function Layout({ children, isDarkMode, toggleTheme }: LayoutProps) {
   const router = useRouter();
+  const currentYear = new Date().getFullYear();
 
-  // Используем статический год для предотвращения ошибок гидратации
-  const currentYear = 2024;
+  // Определяем активный пункт меню
+  const getSelectedKey = () => {
+    if (router.pathname === '/') return ['home'];
+    if (router.pathname === '/books' || router.pathname.startsWith('/books/')) return ['books'];
+    return [];
+  };
 
   return (
-    <>
-      <header className="border-b border-input">
-        <div className="container mx-auto py-4 px-4 flex justify-between items-center">
-          <Link href="/" className="text-2xl font-bold">
-            Трекер книг
+    <AntLayout style={{ minHeight: '100vh' }}>
+      <Header style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '0 24px',
+        position: 'sticky',
+        top: 0,
+        zIndex: 1,
+        width: '100%',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center' }}>
+          <Link href="/">
+            <Title level={4} style={{ margin: 0, color: 'white' }}>
+              Трекер книг
+            </Title>
           </Link>
-          <nav className="hidden md:flex space-x-4">
-            <Link href="/" className={`${router.pathname === '/' ? 'text-primary' : 'text-foreground'} hover:text-primary transition-colors`}>
-              Главная
-            </Link>
-            <Link href="/books" className={`${router.pathname === '/books' ? 'text-primary' : 'text-foreground'} hover:text-primary transition-colors`}>
-              Книги (демо)
-            </Link>
-            <Link href="/supabase-books" className={`${router.pathname === '/supabase-books' ? 'text-primary' : 'text-foreground'} hover:text-primary transition-colors`}>
-              Книги из Supabase
-            </Link>
-          </nav>
-          <div className="flex items-center space-x-2">
-            <ThemeToggle />
-            <Button variant="outline" size="sm" asChild>
-              <Link href="/auth/signin">Войти</Link>
-            </Button>
-            <Button size="sm" asChild>
-              <Link href="/auth/signup">Регистрация</Link>
-            </Button>
-          </div>
+          <Menu
+            theme="dark"
+            mode="horizontal"
+            selectedKeys={getSelectedKey()}
+            style={{ marginLeft: 30, minWidth: 400 }}
+            items={[
+              {
+                key: 'home',
+                label: <Link href="/">Главная</Link>,
+              },
+              {
+                key: 'books',
+                label: <Link href="/books">Книги</Link>,
+              },
+            ]}
+          />
         </div>
-      </header>
-      <main className="flex-1">
+        <Space>
+          <Button type="link" href="/auth/signin">
+            Войти
+          </Button>
+          <Button type="primary" href="/auth/signup">
+            Регистрация
+          </Button>
+        </Space>
+      </Header>
+      <Content style={{ padding: '0 50px', marginTop: 24 }}>
         {children}
-      </main>
-      <footer className="border-t border-input py-6">
-        <div className="container mx-auto px-4 text-center text-muted-foreground">
-          <p>© {currentYear} Трекер прочитанных книг</p>
-        </div>
-      </footer>
-    </>
+      </Content>
+      <Footer style={{ textAlign: 'center', padding: '24px 50px' }}>
+        <Text type="secondary">© {currentYear} Трекер прочитанных книг</Text>
+      </Footer>
+      <ThemeToggle isDarkMode={isDarkMode} toggleTheme={toggleTheme} />
+    </AntLayout>
   );
 }

@@ -1,12 +1,19 @@
 import Head from 'next/head';
 import Layout from '@/components/layout/Layout';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Typography, Row, Col, Card, List, Statistic, Spin, Empty, Button } from 'antd';
+import { BookOutlined, UserOutlined, CommentOutlined, StarOutlined } from '@ant-design/icons';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
-export default function Home() {
+const { Title, Text, Paragraph } = Typography;
+
+interface HomeProps {
+  isDarkMode: boolean;
+  toggleTheme: () => void;
+}
+
+export default function Home({ isDarkMode, toggleTheme }: HomeProps) {
   // Состояние для хранения данных из Supabase
   const [popularBooks, setPopularBooks] = useState<any[]>([]);
   const [recentComments, setRecentComments] = useState<any[]>([]);
@@ -82,120 +89,132 @@ export default function Home() {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      <Layout>
-        <div className="container mx-auto py-8 px-4">
-          <h1 className="text-4xl font-bold mb-8">Дашборд</h1>
+      <Layout isDarkMode={isDarkMode} toggleTheme={toggleTheme}>
+        <div style={{ maxWidth: 1200, margin: '0 auto', padding: '24px 16px' }}>
+          <Title level={2} style={{ marginBottom: 24 }}>Дашборд</Title>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
+          <Row gutter={[24, 24]}>
             {/* Популярные книги */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Популярные книги</CardTitle>
-                <CardDescription>Книги с высоким рейтингом</CardDescription>
-              </CardHeader>
-              <CardContent>
+            <Col xs={24} md={12} lg={8}>
+              <Card
+                title="Популярные книги"
+                extra={<Link href="/books">Все книги</Link>}
+              >
                 {loading ? (
-                  <div className="py-4 text-center">
-                    <p>Загрузка книг...</p>
+                  <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                    <Spin />
                   </div>
                 ) : popularBooks.length === 0 ? (
-                  <div className="py-4 text-center">
-                    <p className="text-muted-foreground">Нет данных о книгах</p>
-                  </div>
+                  <Empty description="Нет данных о книгах" />
                 ) : (
-                  <ul className="space-y-4">
-                    {popularBooks.map((book) => (
-                      <li key={book.id} className="border-b border-input pb-2">
-                        <div className="font-medium">{book.title}</div>
-                        <div className="text-sm text-muted-foreground">{book.author}</div>
-                        <div className="text-sm">Рейтинг: <span className="font-semibold text-primary">{book.rating}/10</span></div>
-                      </li>
-                    ))}
-                  </ul>
+                  <List
+                    itemLayout="horizontal"
+                    dataSource={popularBooks}
+                    renderItem={(book) => (
+                      <List.Item>
+                        <List.Item.Meta
+                          title={<Link href={`/books/${book.id}`}>{book.title}</Link>}
+                          description={
+                            <>
+                              <Text type="secondary">{book.author}</Text>
+                              <div>
+                                <Text>Рейтинг: </Text>
+                                <Text strong>{book.rating}/10</Text>
+                              </div>
+                            </>
+                          }
+                        />
+                      </List.Item>
+                    )}
+                  />
                 )}
-              </CardContent>
-              <CardFooter>
-                <Button variant="outline" size="sm" asChild>
-                  <Link href="/supabase-books">Смотреть все книги</Link>
-                </Button>
-              </CardFooter>
-            </Card>
+              </Card>
+            </Col>
 
             {/* Активность пользователей */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Активность</CardTitle>
-                <CardDescription>Недавние действия пользователей</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-4">
-                  {recentActivity.map((activity) => (
-                    <li key={activity.id} className="border-b border-input pb-2">
-                      <div>
-                        <span className="font-medium">{activity.user}</span>{' '}
-                        <span className="text-muted-foreground">{activity.action}</span>{' '}
-                        <span className="font-medium">{activity.book}</span>
-                      </div>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
+            <Col xs={24} md={12} lg={8}>
+              <Card title="Активность пользователей">
+                <List
+                  itemLayout="horizontal"
+                  dataSource={recentActivity}
+                  renderItem={(activity) => (
+                    <List.Item>
+                      <List.Item.Meta
+                        description={
+                          <Paragraph>
+                            <Text strong>{activity.user}</Text>{' '}
+                            <Text type="secondary">{activity.action}</Text>{' '}
+                            <Text strong>{activity.book}</Text>
+                          </Paragraph>
+                        }
+                      />
+                    </List.Item>
+                  )}
+                />
+              </Card>
+            </Col>
 
             {/* Последние комментарии */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Комментарии</CardTitle>
-                <CardDescription>Последние отзывы о книгах</CardDescription>
-              </CardHeader>
-              <CardContent>
+            <Col xs={24} md={12} lg={8}>
+              <Card title="Комментарии">
                 {loading ? (
-                  <div className="py-4 text-center">
-                    <p>Загрузка комментариев...</p>
+                  <div style={{ textAlign: 'center', padding: '20px 0' }}>
+                    <Spin />
                   </div>
                 ) : recentComments.length === 0 ? (
-                  <div className="py-4 text-center">
-                    <p className="text-muted-foreground">Нет комментариев</p>
-                  </div>
+                  <Empty description="Нет комментариев" />
                 ) : (
-                  <ul className="space-y-4">
-                    {recentComments.map((comment) => (
-                      <li key={comment.id} className="border-b border-input pb-2">
-                        <div className="font-medium">{comment.user} о книге "{comment.book}"</div>
-                        <div className="text-sm text-muted-foreground">{comment.comment}</div>
-                      </li>
-                    ))}
-                  </ul>
+                  <List
+                    itemLayout="horizontal"
+                    dataSource={recentComments}
+                    renderItem={(comment) => (
+                      <List.Item>
+                        <List.Item.Meta
+                          title={<Text>{comment.user} о книге "{comment.book}"</Text>}
+                          description={<Text type="secondary">{comment.comment}</Text>}
+                        />
+                      </List.Item>
+                    )}
+                  />
                 )}
-              </CardContent>
-            </Card>
-          </div>
+              </Card>
+            </Col>
+          </Row>
 
           {/* Статистика */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Общая статистика</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="text-center p-4 bg-muted rounded-lg">
-                  <div className="text-3xl font-bold">1,245</div>
-                  <div className="text-sm text-muted-foreground">Книг в базе</div>
-                </div>
-                <div className="text-center p-4 bg-muted rounded-lg">
-                  <div className="text-3xl font-bold">348</div>
-                  <div className="text-sm text-muted-foreground">Пользователей</div>
-                </div>
-                <div className="text-center p-4 bg-muted rounded-lg">
-                  <div className="text-3xl font-bold">5,672</div>
-                  <div className="text-sm text-muted-foreground">Отзывов</div>
-                </div>
-                <div className="text-center p-4 bg-muted rounded-lg">
-                  <div className="text-3xl font-bold">8.7</div>
-                  <div className="text-sm text-muted-foreground">Средний рейтинг</div>
-                </div>
-              </div>
-            </CardContent>
+          <Card title="Общая статистика" style={{ marginTop: 24 }}>
+            <Row gutter={[16, 16]}>
+              <Col xs={12} md={6}>
+                <Statistic
+                  title="Книг в базе"
+                  value={1245}
+                  prefix={<BookOutlined />}
+                />
+              </Col>
+              <Col xs={12} md={6}>
+                <Statistic
+                  title="Пользователей"
+                  value={348}
+                  prefix={<UserOutlined />}
+                />
+              </Col>
+              <Col xs={12} md={6}>
+                <Statistic
+                  title="Отзывов"
+                  value={5672}
+                  prefix={<CommentOutlined />}
+                />
+              </Col>
+              <Col xs={12} md={6}>
+                <Statistic
+                  title="Средний рейтинг"
+                  value={8.7}
+                  precision={1}
+                  prefix={<StarOutlined />}
+                  suffix="/10"
+                />
+              </Col>
+            </Row>
           </Card>
         </div>
       </Layout>

@@ -1,6 +1,11 @@
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import React from 'react';
+import { Card, Typography, Tag, Rate, Button, Space } from 'antd';
+import { BookOutlined, ReadOutlined, ClockCircleOutlined } from '@ant-design/icons';
 import Link from 'next/link';
+import { formatDate } from '@/lib/utils';
+
+const { Meta } = Card;
+const { Text, Title } = Typography;
 
 interface BookCardProps {
   id: number | string;
@@ -10,9 +15,19 @@ interface BookCardProps {
   rating?: number;
   status?: 'read' | 'reading' | 'want_to_read';
   tags?: string[];
+  created_at?: string;
 }
 
-export default function BookCard({ id, title, author, cover, rating, status, tags }: BookCardProps) {
+export default function BookCard({ 
+  id, 
+  title, 
+  author, 
+  cover, 
+  rating, 
+  status, 
+  tags,
+  created_at
+}: BookCardProps) {
   // Функция для отображения статуса на русском
   const getStatusText = (status?: string) => {
     if (!status) return null;
@@ -25,54 +40,82 @@ export default function BookCard({ id, title, author, cover, rating, status, tag
     }
   };
 
+  // Функция для получения иконки статуса
+  const getStatusIcon = (status?: string) => {
+    if (!status) return null;
+
+    switch (status) {
+      case 'read': return <ReadOutlined />;
+      case 'reading': return <BookOutlined />;
+      case 'want_to_read': return <ClockCircleOutlined />;
+      default: return null;
+    }
+  };
+
+  // Преобразование рейтинга из 10-балльной шкалы в 5-балльную для Rate
+  const normalizedRating = rating ? rating / 2 : 0;
+
   return (
-    <Card className="overflow-hidden flex flex-col h-full hover:shadow-md transition-shadow">
-      <div className="h-40 bg-muted flex items-center justify-center">
-        {cover ? (
-          <img
-            src={cover}
-            alt={`Обложка ${title}`}
-            className="h-full w-full object-cover"
-          />
-        ) : (
-          <div className="text-muted-foreground">Нет обложки</div>
-        )}
-      </div>
-      <CardHeader className="pb-2">
-        <CardTitle className="line-clamp-1">{title}</CardTitle>
-        <p className="text-sm text-muted-foreground">{author}</p>
-      </CardHeader>
-      <CardContent className="flex-grow pt-0">
-        {status && (
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-sm font-medium">Статус:</span>
-            <span className="text-sm">{getStatusText(status)}</span>
-          </div>
-        )}
-        {rating !== undefined && (
-          <div className="flex items-center gap-2 mb-2">
-            <span className="text-sm font-medium">Рейтинг:</span>
-            <span className="text-sm font-semibold text-primary">{rating}/10</span>
-          </div>
-        )}
-        {tags && tags.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-2">
-            {tags.map(tag => (
-              <span
-                key={tag}
-                className="px-2 py-1 bg-muted text-xs rounded-full hover:bg-primary/10 transition-colors"
-              >
-                {tag}
-              </span>
-            ))}
-          </div>
-        )}
-      </CardContent>
-      <CardFooter>
-        <Button variant="outline" size="sm" className="w-full" asChild>
+    <Card
+      hoverable
+      cover={cover ? (
+        <img
+          alt={`Обложка ${title}`}
+          src={cover}
+          style={{ height: 200, objectFit: 'cover' }}
+        />
+      ) : (
+        <div style={{ 
+          height: 200, 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          background: '#f0f0f0'
+        }}>
+          <BookOutlined style={{ fontSize: 48, opacity: 0.5 }} />
+        </div>
+      )}
+      actions={[
+        <Button key="details" type="link">
           <Link href={`/books/${id}`}>Подробнее</Link>
         </Button>
-      </CardFooter>
+      ]}
+    >
+      <Meta
+        title={<Title level={5} ellipsis={{ rows: 1 }}>{title}</Title>}
+        description={
+          <Space direction="vertical" style={{ width: '100%' }}>
+            <Text type="secondary">{author}</Text>
+            
+            {status && (
+              <Text>
+                {getStatusIcon(status)} {getStatusText(status)}
+              </Text>
+            )}
+            
+            {rating !== undefined && (
+              <div>
+                <Rate disabled defaultValue={normalizedRating} allowHalf />
+                <Text style={{ marginLeft: 8 }}>{rating}/10</Text>
+              </div>
+            )}
+            
+            {tags && tags.length > 0 && (
+              <div>
+                {tags.map(tag => (
+                  <Tag key={tag} style={{ marginBottom: 4 }}>{tag}</Tag>
+                ))}
+              </div>
+            )}
+            
+            {created_at && (
+              <Text type="secondary" style={{ fontSize: '12px' }}>
+                Добавлено: {formatDate(created_at)}
+              </Text>
+            )}
+          </Space>
+        }
+      />
     </Card>
   );
 }
