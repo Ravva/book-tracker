@@ -26,7 +26,10 @@ export default function Layout({ children }: LayoutProps) {
               Главная
             </Link>
             <Link href="/books" className={`${router.pathname === '/books' ? 'text-primary' : 'text-foreground'} hover:text-primary transition-colors`}>
-              Книги
+              Книги (демо)
+            </Link>
+            <Link href="/supabase-books" className={`${router.pathname === '/supabase-books' ? 'text-primary' : 'text-foreground'} hover:text-primary transition-colors`}>
+              Книги из Supabase
             </Link>
           </nav>
           <div className="flex items-center space-x-2">

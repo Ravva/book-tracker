@@ -3,24 +3,75 @@ import Layout from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
+import { supabase } from '@/lib/supabase';
 
 export default function Home() {
-  // Данные для дашборда (в реальном приложении будут загружаться с сервера)
-  const popularBooks = [
-    { id: 1, title: 'Война и мир', author: 'Лев Толстой', rating: 9.2 },
-    { id: 2, title: 'Преступление и наказание', author: 'Федор Достоевский', rating: 8.9 },
-    { id: 3, title: 'Мастер и Маргарита', author: 'Михаил Булгаков', rating: 9.5 },
-  ];
+  // Состояние для хранения данных из Supabase
+  const [popularBooks, setPopularBooks] = useState<any[]>([]);
+  const [recentComments, setRecentComments] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
+  // Загрузка данных из Supabase
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        setLoading(true);
+
+        // Получаем книги с высоким рейтингом
+        const { data: booksData, error: booksError } = await supabase
+          .from('books')
+          .select('id, title, author, rating')
+          .order('rating', { ascending: false })
+          .limit(3);
+
+        if (booksError) {
+          console.error('Ошибка при загрузке книг:', booksError);
+        } else {
+          setPopularBooks(booksData || []);
+        }
+
+        // Получаем последние комментарии
+        const { data: commentsData, error: commentsError } = await supabase
+          .from('comments')
+          .select(`
+            id,
+            content,
+            books:book_id (title),
+            users:user_id (id)
+          `)
+          .order('created_at', { ascending: false })
+          .limit(3);
+
+        if (commentsError) {
+          console.error('Ошибка при загрузке комментариев:', commentsError);
+        } else {
+          // Преобразуем данные в нужный формат
+          const formattedComments = commentsData?.map(comment => ({
+            id: comment.id,
+            user: 'Пользователь', // В реальном приложении здесь будет имя пользователя
+            book: comment.books?.title || 'Неизвестная книга',
+            comment: comment.content
+          })) || [];
+
+          setRecentComments(formattedComments);
+        }
+
+      } catch (error) {
+        console.error('Ошибка при загрузке данных:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchData();
+  }, []);
+
+  // Демо-данные для активности пользователей (в реальном приложении будут загружаться с сервера)
   const recentActivity = [
     { id: 1, user: 'Анна', action: 'прочитала книгу', book: 'Гордость и предубеждение' },
     { id: 2, user: 'Иван', action: 'добавил в список', book: '1984' },
     { id: 3, user: 'Мария', action: 'оценила книгу', book: 'Три товарища' },
-  ];
-
-  const recentComments = [
-    { id: 1, user: 'Петр', book: 'Идиот', comment: 'Потрясающая книга, очень глубокая и философская.' },
-    { id: 2, user: 'Елена', book: 'Анна Каренина', comment: 'Классика, которая не устаревает.' },
   ];
 
   return (
@@ -43,19 +94,29 @@ export default function Home() {
                 <CardDescription>Книги с высоким рейтингом</CardDescription>
               </CardHeader>
               <CardContent>
-                <ul className="space-y-4">
-                  {popularBooks.map((book) => (
-                    <li key={book.id} className="border-b border-input pb-2">
-                      <div className="font-medium">{book.title}</div>
-                      <div className="text-sm text-muted-foreground">{book.author}</div>
-                      <div className="text-sm">Рейтинг: <span className="font-semibold text-primary">{book.rating}/10</span></div>
-                    </li>
-                  ))}
-                </ul>
+                {loading ? (
+                  <div className="py-4 text-center">
+                    <p>Загрузка книг...</p>
+                  </div>
+                ) : popularBooks.length === 0 ? (
+                  <div className="py-4 text-center">
+                    <p className="text-muted-foreground">Нет данных о книгах</p>
+                  </div>
+                ) : (
+                  <ul className="space-y-4">
+                    {popularBooks.map((book) => (
+                      <li key={book.id} className="border-b border-input pb-2">
+                        <div className="font-medium">{book.title}</div>
+                        <div className="text-sm text-muted-foreground">{book.author}</div>
+                        <div className="text-sm">Рейтинг: <span className="font-semibold text-primary">{book.rating}/10</span></div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </CardContent>
               <CardFooter>
                 <Button variant="outline" size="sm" asChild>
-                  <Link href="/books">Смотреть все книги</Link>
+                  <Link href="/supabase-books">Смотреть все книги</Link>
                 </Button>
               </CardFooter>
             </Card>
@@ -88,14 +149,24 @@ export default function Home() {
                 <CardDescription>Последние отзывы о книгах</CardDescription>
               </CardHeader>
               <CardContent>
-                <ul className="space-y-4">
-                  {recentComments.map((comment) => (
-                    <li key={comment.id} className="border-b border-input pb-2">
-                      <div className="font-medium">{comment.user} о книге "{comment.book}"</div>
-                      <div className="text-sm text-muted-foreground">{comment.comment}</div>
-                    </li>
-                  ))}
-                </ul>
+                {loading ? (
+                  <div className="py-4 text-center">
+                    <p>Загрузка комментариев...</p>
+                  </div>
+                ) : recentComments.length === 0 ? (
+                  <div className="py-4 text-center">
+                    <p className="text-muted-foreground">Нет комментариев</p>
+                  </div>
+                ) : (
+                  <ul className="space-y-4">
+                    {recentComments.map((comment) => (
+                      <li key={comment.id} className="border-b border-input pb-2">
+                        <div className="font-medium">{comment.user} о книге "{comment.book}"</div>
+                        <div className="text-sm text-muted-foreground">{comment.comment}</div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </CardContent>
             </Card>
           </div>
